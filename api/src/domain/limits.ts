@@ -9,3 +9,6 @@ export const LOGIN_RATE_LIMIT = { attempts: 10, windowMs: 15 * 60 * 1000 } as co
 
 /** Passwords are checked up to this length; longer input is refused before bcrypt runs. */
 export const PASSWORD_MAX_LENGTH = 128;
+
+/** Password policy when a password is set (docs/API.md §12). */
+export const PASSWORD_MIN_LENGTH = 8;

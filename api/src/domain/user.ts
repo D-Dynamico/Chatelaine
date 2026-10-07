@@ -84,3 +84,23 @@ export interface UserPatch {
   readonly passwordHash?: string;
   readonly updatedAt: string;
 }
+
+/** What an admin sends to create a user; the service hashes the password and stamps times. */
+export interface CreateUserInput {
+  readonly userId: string;
+  readonly displayName: string;
+  readonly email: string;
+  readonly department: string;
+  readonly role: Role;
+  readonly password: string;
+}
+
+/** What an admin may change on an existing user. userId is never among them. */
+export interface UserChanges {
+  readonly displayName?: string;
+  readonly email?: string;
+  readonly department?: string;
+  readonly role?: Role;
+  readonly status?: UserStatus;
+  readonly password?: string;
+}

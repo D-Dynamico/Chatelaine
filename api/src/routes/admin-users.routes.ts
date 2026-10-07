@@ -1,9 +1,20 @@
 import { Router } from 'express';
-import { getUserController, listUsersController } from '../controllers/admin-users.controller.js';
+import {
+  createUserController,
+  deleteUserController,
+  getUserController,
+  listUsersController,
+  updateUserController,
+} from '../controllers/admin-users.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { requireRole } from '../middleware/require-role.js';
 import { validate } from '../middleware/validate.js';
-import { userIdParam, usersQuery } from '../schemas/admin-users.schema.js';
+import {
+  createUserBody,
+  patchUserBody,
+  userIdParam,
+  usersQuery,
+} from '../schemas/admin-users.schema.js';
 import type { AuthService } from '../services/auth.service.js';
 import type { UserService } from '../services/user.service.js';
 
@@ -16,6 +27,14 @@ export function adminUsersRoutes(auth: AuthService, users: UserService): Router 
   const router = Router();
   router.use(authenticate(auth), requireRole('ADMIN'));
   router.get('/', validate('query', usersQuery), listUsersController(users));
+  router.post('/', validate('body', createUserBody), createUserController(users));
   router.get('/:userId', validate('params', userIdParam), getUserController(users));
+  router.patch(
+    '/:userId',
+    validate('params', userIdParam),
+    validate('body', patchUserBody),
+    updateUserController(users),
+  );
+  router.delete('/:userId', validate('params', userIdParam), deleteUserController(users));
   return router;
 }

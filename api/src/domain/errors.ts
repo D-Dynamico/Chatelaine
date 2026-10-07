@@ -115,3 +115,8 @@ export class ConflictError extends AppError {
 export function userNotFound(userId: string): NotFoundError {
   return new NotFoundError('USER_NOT_FOUND', `No user has the ID "${userId}".`);
 }
+
+/** Thrown by every adapter on a duplicate userId; the UI shows it next to the field (§25). */
+export function userIdTaken(): ConflictError {
+  return new ConflictError('USER_EXISTS', 'That user ID is already taken. Choose another one.');
+}

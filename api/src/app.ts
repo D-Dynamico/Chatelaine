@@ -42,7 +42,7 @@ function createServices(deps: AppDeps) {
   const tokens = new TokenService(deps.config.jwt, deps.clock);
   const auth = new AuthService(deps.store.users, passwords, tokens, deps.clock);
   const records = new RecordService(deps.store.records, deps.store.users);
-  const users = new UserService(deps.store.users, deps.store.records);
+  const users = new UserService(deps.store.users, deps.store.records, passwords, deps.clock);
   return { auth, records, users };
 }
 

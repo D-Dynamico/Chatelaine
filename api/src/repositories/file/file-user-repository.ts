@@ -1,4 +1,4 @@
-import { ConflictError, userNotFound } from '../../domain/errors.js';
+import { userIdTaken, userNotFound } from '../../domain/errors.js';
 import type { Page } from '../../domain/paging.js';
 import type {
   NewUser,
@@ -58,7 +58,7 @@ export class FileUserRepository implements UserRepository {
   create(input: NewUser): Promise<User> {
     return this.store.mutate((draft) => {
       if (draft.users.some((user) => user.userId === input.userId)) {
-        throw new ConflictError('USER_EXISTS', `The user ID "${input.userId}" is already taken.`);
+        throw userIdTaken();
       }
       const stored: NewUser = { ...input };
       draft.users.push(stored);
