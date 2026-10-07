@@ -80,7 +80,8 @@ chatelaine/
         dynamo/               DynamoDB adapter
         create-store.ts       picks the adapter from config
       seed/                   deterministic seed data and the seed command
-      lib/                    logger, clock, id generator
+      lib/                    logger, clock, runtime helpers (.env loading, version)
+      types/                  Express augmentation: typed res.locals and req.auth
     test/
       api/                    supertest suites per route group
       contract/               one repository suite, run against every adapter
@@ -105,6 +106,11 @@ chatelaine/
 
 Module boundaries are enforced by convention and review: API layers in §4, web folders in
 §14.
+
+**API file names** carry their layer, so a file's job is visible from its name:
+`auth.routes.ts`, `auth.controller.ts`, `auth.service.ts`, `auth.schema.ts`. Middleware,
+`lib/` and repository files are plain kebab-case (`request-context.ts`,
+`file-user-repository.ts`).
 
 ## §4 API layers
 
