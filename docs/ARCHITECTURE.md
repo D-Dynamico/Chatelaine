@@ -259,8 +259,10 @@ same responsibilities.
 | Service request | `USER#<ownerId>` | `SR#<createdAt>#<id>` | `TYPE#SR` | `<createdAt>#<id>` |
 
 A General User's list is a `Query` on their own partition, so the ownership filter is part
-of the key condition. Admin lists use the GSI. Offset paging and sorting by fields other
-than `createdAt` happen in memory after the query. That is fine for demo-sized data and is
+of the key condition, and the access level is a filter expression in the same request. Admin
+lists use the GSI. The scope is applied there and nowhere else: re-filtering in memory
+would hide a broken key condition from the contract tests. Offset paging and sorting by
+fields other than `createdAt` happen in memory after the query. That is fine for demo-sized data and is
 written up as a known limitation in D7 and the README.
 
 ## §7 Request flows

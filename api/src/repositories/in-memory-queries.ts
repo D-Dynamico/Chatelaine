@@ -76,15 +76,29 @@ const RECORD_SORT_KEYS: Readonly<Record<RecordSortField, (item: ServiceRequest) 
   title: (item) => item.title,
 };
 
+/**
+ * Filters, sorts and pages items that are already within the caller's scope. DynamoDB
+ * calls this directly, because its key query has applied the scope; applying it again
+ * here would hide a broken key condition from the contract tests.
+ */
+export function applyRecordQuery(
+  inScope: readonly ServiceRequest[],
+  query: RecordListQuery,
+): Page<ServiceRequest> {
+  const matching = inScope.filter((item) => matchesRecordQuery(item, query));
+  return sortAndPage(matching, RECORD_SORT_KEYS[query.sort], (item) => item.id, query.order, query);
+}
+
+/** For adapters holding every item: applies the scope, then the query. */
 export function queryRecords(
   items: readonly ServiceRequest[],
   scope: RecordScope,
   query: RecordListQuery,
 ): Page<ServiceRequest> {
-  const matching = items.filter(
-    (item) => inRecordScope(item, scope) && matchesRecordQuery(item, query),
+  return applyRecordQuery(
+    items.filter((item) => inRecordScope(item, scope)),
+    query,
   );
-  return sortAndPage(matching, RECORD_SORT_KEYS[query.sort], (item) => item.id, query.order, query);
 }
 
 export function countRecords(items: readonly ServiceRequest[]): RecordCounts {

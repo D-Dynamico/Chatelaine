@@ -1,13 +1,8 @@
 import { XMLParser } from 'fast-xml-parser';
 import { z } from 'zod';
-import {
-  ACCESS_LEVELS,
-  CATEGORIES,
-  PRIORITIES,
-  REQUEST_STATUSES,
-  type ServiceRequest,
-} from '../../domain/service-request.js';
-import { ROLES, USER_STATUSES, type NewUser } from '../../domain/user.js';
+import type { ServiceRequest } from '../../domain/service-request.js';
+import type { NewUser } from '../../domain/user.js';
+import { storedRequest, storedUser } from '../stored-shapes.js';
 import { itemElement, listElement, xmlDocument, type XmlField } from './xml-writer.js';
 
 /** Everything the XML file holds. Users keep their hash here, inside the adapter only. */
@@ -26,39 +21,6 @@ const parser = new XMLParser({
   // Ask for string paths explicitly; isArray then always receives a string.
   jPath: true,
   isArray: (_name, jpath) => typeof jpath === 'string' && LIST_PATHS.has(jpath),
-});
-
-/** A missing element is how null is written. */
-const nullable = z
-  .string()
-  .optional()
-  .transform((value) => value ?? null);
-
-const storedUser = z.object({
-  userId: z.string(),
-  displayName: z.string(),
-  email: z.string(),
-  department: z.string(),
-  role: z.enum(ROLES),
-  status: z.enum(USER_STATUSES),
-  passwordHash: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  lastLoginAt: nullable,
-});
-
-const storedRequest = z.object({
-  id: z.string(),
-  ownerId: z.string(),
-  title: z.string(),
-  category: z.enum(CATEGORIES),
-  priority: z.enum(PRIORITIES),
-  status: z.enum(REQUEST_STATUSES),
-  accessLevel: z.enum(ACCESS_LEVELS),
-  assignee: nullable,
-  internalNote: nullable,
-  createdAt: z.string(),
-  updatedAt: z.string(),
 });
 
 /**
