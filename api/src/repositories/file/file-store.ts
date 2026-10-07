@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { Store } from '../contracts.js';
+import { FileRecordRepository } from './file-record-repository.js';
 import { FileUserRepository } from './file-user-repository.js';
 import {
   emptyDocument,
@@ -17,11 +18,13 @@ import {
  */
 export class FileStore implements Store {
   readonly users: FileUserRepository;
+  readonly records: FileRecordRepository;
   private document: XmlDocument = emptyDocument();
   private writes: Promise<void> = Promise.resolve();
 
   constructor(private readonly path: string) {
     this.users = new FileUserRepository(this);
+    this.records = new FileRecordRepository(this);
   }
 
   async init(): Promise<void> {

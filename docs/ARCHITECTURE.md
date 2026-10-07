@@ -180,7 +180,9 @@ through any listing method by accident.
 | `createdAt`, `updatedAt` | ISO 8601 string | yes |
 
 Adapters also store `priorityRank` (1 to 4) so sorting by priority follows severity, not
-the alphabet (D14).
+the alphabet (D14), and `statusRank` (1 to 4) so sorting by status follows the workflow
+from `OPEN` to `CLOSED` for the same reason. Ties break on `id` in the same direction, and
+strings compare by code unit (MongoDB's default), so every adapter returns identical pages.
 
 **Visibility rule, applied by `RecordService`:**
 

@@ -1,21 +1,38 @@
 import { XMLParser } from 'fast-xml-parser';
 import { z } from 'zod';
+import {
+  ACCESS_LEVELS,
+  CATEGORIES,
+  PRIORITIES,
+  REQUEST_STATUSES,
+  type ServiceRequest,
+} from '../../domain/service-request.js';
 import { ROLES, USER_STATUSES, type NewUser } from '../../domain/user.js';
+import { itemElement, listElement, xmlDocument, type XmlField } from './xml-writer.js';
 
 /** Everything the XML file holds. Users keep their hash here, inside the adapter only. */
 export interface XmlDocument {
   users: NewUser[];
+  requests: ServiceRequest[];
 }
 
-const USER_PATH = 'chatelaine.users.user';
-const INDENT = '  ';
+const ROOT = 'chatelaine';
+const LIST_PATHS = new Set([`${ROOT}.users.user`, `${ROOT}.serviceRequests.request`]);
 
 const parser = new XMLParser({
   // Keep every value a string ("007" must not become 7) and exactly as written.
   parseTagValue: false,
   trimValues: false,
-  isArray: (_name, jpath) => jpath === USER_PATH,
+  // Ask for string paths explicitly; isArray then always receives a string.
+  jPath: true,
+  isArray: (_name, jpath) => typeof jpath === 'string' && LIST_PATHS.has(jpath),
 });
+
+/** A missing element is how null is written. */
+const nullable = z
+  .string()
+  .optional()
+  .transform((value) => value ?? null);
 
 const storedUser = z.object({
   userId: z.string(),
@@ -27,23 +44,44 @@ const storedUser = z.object({
   passwordHash: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  // A null lastLoginAt is written as a missing element.
-  lastLoginAt: z
-    .string()
-    .optional()
-    .transform((value) => value ?? null),
+  lastLoginAt: nullable,
 });
 
-// An empty <users></users> parses as "", so both shapes are accepted. Formatting
-// whitespace arrives as "#text" keys, which z.object discards.
+const storedRequest = z.object({
+  id: z.string(),
+  ownerId: z.string(),
+  title: z.string(),
+  category: z.enum(CATEGORIES),
+  priority: z.enum(PRIORITIES),
+  status: z.enum(REQUEST_STATUSES),
+  accessLevel: z.enum(ACCESS_LEVELS),
+  assignee: nullable,
+  internalNote: nullable,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+/**
+ * An empty list element parses as "", and a file from Stage 1 has no serviceRequests at
+ * all, so each list accepts both. Formatting whitespace arrives as "#text" keys, which
+ * z.object discards.
+ */
+function listOf<T extends z.ZodType>(tag: string, item: T) {
+  return z
+    .union([z.literal(''), z.object({ [tag]: z.array(item).default([]) })])
+    .optional()
+    .transform((list) => (list === undefined || list === '' ? [] : (list[tag] as z.output<T>[])));
+}
+
 const documentSchema = z.object({
-  chatelaine: z.object({
-    users: z.union([z.literal(''), z.object({ user: z.array(storedUser).default([]) })]),
+  [ROOT]: z.object({
+    users: listOf('user', storedUser),
+    serviceRequests: listOf('request', storedRequest),
   }),
 });
 
 export function emptyDocument(): XmlDocument {
-  return { users: [] };
+  return { users: [], requests: [] };
 }
 
 export function parseXmlDocument(xml: string, source: string): XmlDocument {
@@ -53,26 +91,13 @@ export function parseXmlDocument(xml: string, source: string): XmlDocument {
       `${source} is not a valid Chatelaine data file:\n${z.prettifyError(result.error)}`,
     );
   }
-  const { users } = result.data.chatelaine;
-  return { users: users === '' ? [] : users.user };
-}
-
-// Writing is done by hand: the document has one fixed shape, text content needs only three
-// escapes, and fast-xml-parser 5.11 deprecates its builder in favour of a separate package.
-const TEXT_ESCAPES: Readonly<Record<string, string>> = { '&': '&amp;', '<': '&lt;', '>': '&gt;' };
-// Control characters other than tab, newline and carriage return are not legal in XML 1.0.
-const ILLEGAL_XML_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/;
-
-function escapeText(value: string): string {
-  if (ILLEGAL_XML_CHARS.test(value)) {
-    throw new Error('A value contains a control character that XML cannot store.');
-  }
-  return value.replace(/[&<>]/g, (char) => TEXT_ESCAPES[char] ?? char);
+  const root = result.data[ROOT];
+  return { users: root.users, requests: root.serviceRequests };
 }
 
 /** Fixed element order, so the file diffs cleanly between writes. */
-function userElement(user: NewUser): string {
-  const fields: [string, string | null][] = [
+function userFields(user: NewUser): XmlField[] {
+  return [
     ['userId', user.userId],
     ['displayName', user.displayName],
     ['email', user.email],
@@ -84,21 +109,31 @@ function userElement(user: NewUser): string {
     ['updatedAt', user.updatedAt],
     ['lastLoginAt', user.lastLoginAt],
   ];
-  const children = fields
-    .filter((field): field is [string, string] => field[1] !== null)
-    .map(([name, value]) => `${INDENT.repeat(3)}<${name}>${escapeText(value)}</${name}>`);
-  return [`${INDENT.repeat(2)}<user>`, ...children, `${INDENT.repeat(2)}</user>`].join('\n');
+}
+
+function requestFields(request: ServiceRequest): XmlField[] {
+  return [
+    ['id', request.id],
+    ['ownerId', request.ownerId],
+    ['title', request.title],
+    ['category', request.category],
+    ['priority', request.priority],
+    ['status', request.status],
+    ['accessLevel', request.accessLevel],
+    ['assignee', request.assignee],
+    ['internalNote', request.internalNote],
+    ['createdAt', request.createdAt],
+    ['updatedAt', request.updatedAt],
+  ];
 }
 
 export function serializeXmlDocument(document: XmlDocument): string {
-  const users = document.users.map(userElement);
-  return [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<chatelaine>',
-    users.length === 0 ? `${INDENT}<users></users>` : `${INDENT}<users>`,
-    ...users,
-    ...(users.length === 0 ? [] : [`${INDENT}</users>`]),
-    '</chatelaine>',
-    '',
-  ].join('\n');
+  const users = document.users.map((user) => itemElement('user', userFields(user), 2));
+  const requests = document.requests.map((request) =>
+    itemElement('request', requestFields(request), 2),
+  );
+  return xmlDocument(ROOT, [
+    listElement('users', users, 1),
+    listElement('serviceRequests', requests, 1),
+  ]);
 }

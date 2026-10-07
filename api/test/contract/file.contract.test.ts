@@ -4,15 +4,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FileStore } from '../../src/repositories/file/file-store.js';
-import { aUser, T1 } from '../helpers/fixtures.js';
-import { describeUserRepositoryContract } from './user-repository.contract.js';
+import { aUser, requestSet, T1 } from '../helpers/fixtures.js';
+import { describeRecordRepositoryContract } from './record-repository.contract.js';
+import { describeUserRepositoryContract, type StoreHandle } from './user-repository.contract.js';
 
 async function tempDataFile(): Promise<{ path: string; dir: string }> {
   const dir = await mkdtemp(join(tmpdir(), 'chatelaine-'));
   return { dir, path: join(dir, 'nested', 'chatelaine.xml') };
 }
 
-describeUserRepositoryContract('file (XML)', async () => {
+async function openFileStore(): Promise<StoreHandle> {
   const { dir, path } = await tempDataFile();
   const store = new FileStore(path);
   return {
@@ -22,7 +23,10 @@ describeUserRepositoryContract('file (XML)', async () => {
       await rm(dir, { recursive: true, force: true });
     },
   };
-});
+}
+
+describeUserRepositoryContract('file (XML)', openFileStore);
+describeRecordRepositoryContract('file (XML)', openFileStore);
 
 describe('FileStore on disk', () => {
   let dir: string;
@@ -103,6 +107,33 @@ describe('FileStore on disk', () => {
     const xml = await readFile(path, 'utf8');
     expect(xml).toContain('\n  <users>\n    <user>\n      <userId>riya</userId>\n');
     expect(xml).not.toContain('<lastLoginAt>');
+  });
+
+  it('keeps service requests across a restart, nulls included', async () => {
+    const first = await reopen();
+    await first.records.insertMany(requestSet());
+    await first.close();
+    const second = await reopen();
+    const page = await second.records.list(
+      {},
+      { sort: 'createdAt', order: 'asc', page: 1, pageSize: 50 },
+    );
+    expect(page.items).toEqual(
+      [...requestSet()].sort(
+        (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
+      ),
+    );
+  });
+
+  it('opens a Stage 1 file that has no service requests yet', async () => {
+    await writeFile(
+      path.replace('nested', ''),
+      '<?xml version="1.0" encoding="UTF-8"?>\n<chatelaine>\n  <users></users>\n</chatelaine>\n',
+    );
+    const store = new FileStore(path.replace('nested', ''));
+    await store.init();
+    expect(await store.records.countByOwner('riya')).toBe(0);
+    await store.close();
   });
 
   it('refuses to start on a file that is not Chatelaine data', async () => {

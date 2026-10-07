@@ -3,7 +3,8 @@ import type { NewUser, User, UserCredentials, UserPatch } from '../../domain/use
 import type { UserRepository } from '../contracts.js';
 import type { XmlDocument } from './xml-document.js';
 
-interface DocumentAccess {
+/** What a file repository needs from the store: a copy to read, and a safe way to change it. */
+export interface DocumentAccess {
   read(): XmlDocument;
   mutate<T>(change: (draft: XmlDocument) => T): Promise<T>;
 }

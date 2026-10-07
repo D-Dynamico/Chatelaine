@@ -1,8 +1,15 @@
+import type { Page } from '../domain/paging.js';
+import type {
+  RecordCounts,
+  RecordListQuery,
+  RecordScope,
+  ServiceRequest,
+} from '../domain/service-request.js';
 import type { NewUser, User, UserCredentials, UserPatch } from '../domain/user.js';
 
 /**
  * The only storage interface services know about (docs/ARCHITECTURE.md §6). Every adapter
- * passes the same contract suite in test/contract. Record methods arrive in Stage 2.
+ * passes the same contract suites in test/contract.
  */
 export interface UserRepository {
   findById(userId: string): Promise<User | null>;
@@ -18,8 +25,21 @@ export interface UserRepository {
   touchLastLogin(userId: string, at: string): Promise<void>;
 }
 
+export interface RecordRepository {
+  /** Applies the scope and the query's filters in storage, then sorts and pages. */
+  list(scope: RecordScope, query: RecordListQuery): Promise<Page<ServiceRequest>>;
+  /** Counts over the scope, with every enum value present (zero when absent). */
+  summary(scope: RecordScope): Promise<RecordCounts>;
+  countByOwner(ownerId: string): Promise<number>;
+  /** Returns how many requests were deleted. */
+  deleteByOwner(ownerId: string): Promise<number>;
+  /** Seed only. */
+  insertMany(items: readonly ServiceRequest[]): Promise<void>;
+}
+
 export interface Store {
   readonly users: UserRepository;
+  readonly records: RecordRepository;
   /** Creates the file, indexes or table if missing. Safe to call on existing data. */
   init(): Promise<void>;
   /** Empties every collection. Used by the seed and the contract tests. */
