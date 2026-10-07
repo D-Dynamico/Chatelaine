@@ -1,9 +1,7 @@
 import type { Page, PageRequest, SortOrder } from '../domain/paging.js';
 import {
-  ACCESS_LEVELS,
-  PRIORITIES,
+  emptyRecordCounts,
   PRIORITY_RANK,
-  REQUEST_STATUSES,
   STATUS_RANK,
   type RecordCounts,
   type RecordListQuery,
@@ -87,20 +85,6 @@ export function queryRecords(
     (item) => inRecordScope(item, scope) && matchesRecordQuery(item, query),
   );
   return sortAndPage(matching, RECORD_SORT_KEYS[query.sort], (item) => item.id, query.order, query);
-}
-
-function zeroCounts<K extends string>(keys: readonly K[]): Record<K, number> {
-  // Safe: every key of K is in keys, and each one is set.
-  return Object.fromEntries(keys.map((key) => [key, 0])) as Record<K, number>;
-}
-
-export function emptyRecordCounts(): RecordCounts {
-  return {
-    total: 0,
-    byStatus: zeroCounts(REQUEST_STATUSES),
-    byPriority: zeroCounts(PRIORITIES),
-    byAccessLevel: zeroCounts(ACCESS_LEVELS),
-  };
 }
 
 export function countRecords(items: readonly ServiceRequest[]): RecordCounts {

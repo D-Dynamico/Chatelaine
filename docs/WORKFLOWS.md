@@ -29,9 +29,10 @@ docker compose up -d dynamodb   # then STORAGE=dynamo, DYNAMO_ENDPOINT=http://lo
 npm run seed                    # re-seed after switching
 ```
 
-`docker-compose.yml` (written in Stage 2) runs two services: `mongo` (`mongo:7`, port 27017)
-and `dynamodb` (`amazon/dynamodb-local`, port 8000, in-memory, shared DB). DynamoDB Local
-accepts any credentials; `.env.example` sets dummy ones.
+`docker-compose.yml` (written in Stage 2) runs two services: `mongo` (`mongo:8`, port 27017,
+the version Atlas free clusters run) and `dynamodb` (`amazon/dynamodb-local:3.1.0`, port 8000,
+in-memory, shared DB). DynamoDB Local accepts any credentials; `.env.example` sets dummy
+ones.
 
 ### npm scripts
 
@@ -116,7 +117,7 @@ note.
 `.github/workflows/ci.yml` (Stage 7, free for public repos) runs on every push and pull
 request:
 
-- **api job:** service containers `mongo:7` and `amazon/dynamodb-local`, then `npm ci`,
+- **api job:** service containers `mongo:8` and `amazon/dynamodb-local:3.1.0`, then `npm ci`,
   `lint`, `format:check`, `typecheck`, `test` with `MONGO_URI` and `DYNAMO_ENDPOINT` set, so
   the contract suite runs against all three adapters.
 - **web job:** `npm ci`, `lint`, `format:check`, `typecheck`, `test`, `build`.

@@ -81,3 +81,38 @@ export interface RecordCounts {
   readonly byPriority: Record<Priority, number>;
   readonly byAccessLevel: Record<AccessLevel, number>;
 }
+
+/**
+ * Copies exactly the ServiceRequest fields. Adapters store more (sort ranks, database ids,
+ * key attributes); returning through this keeps those inside the adapter.
+ */
+export function toServiceRequest(source: ServiceRequest): ServiceRequest {
+  return {
+    id: source.id,
+    ownerId: source.ownerId,
+    title: source.title,
+    category: source.category,
+    priority: source.priority,
+    status: source.status,
+    accessLevel: source.accessLevel,
+    assignee: source.assignee,
+    internalNote: source.internalNote,
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt,
+  };
+}
+
+function zeroCounts<K extends string>(keys: readonly K[]): Record<K, number> {
+  // Safe: every key of K is in keys, and each one is set.
+  return Object.fromEntries(keys.map((key) => [key, 0])) as Record<K, number>;
+}
+
+/** Counts with every enum value present at zero, for adapters to fill in. */
+export function emptyRecordCounts(): RecordCounts {
+  return {
+    total: 0,
+    byStatus: zeroCounts(REQUEST_STATUSES),
+    byPriority: zeroCounts(PRIORITIES),
+    byAccessLevel: zeroCounts(ACCESS_LEVELS),
+  };
+}

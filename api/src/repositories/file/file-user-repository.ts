@@ -1,12 +1,13 @@
 import { userIdTaken, userNotFound } from '../../domain/errors.js';
 import type { Page } from '../../domain/paging.js';
-import type {
-  NewUser,
-  User,
-  UserCredentials,
-  UserListQuery,
-  UserPatch,
-  UserStatus,
+import {
+  toUser,
+  type NewUser,
+  type User,
+  type UserCredentials,
+  type UserListQuery,
+  type UserPatch,
+  type UserStatus,
 } from '../../domain/user.js';
 import type { UserRepository } from '../contracts.js';
 import { countAdmins, queryUsers } from '../in-memory-queries.js';
@@ -16,21 +17,6 @@ import type { XmlDocument } from './xml-document.js';
 export interface DocumentAccess {
   read(): XmlDocument;
   mutate<T>(change: (draft: XmlDocument) => T): Promise<T>;
-}
-
-/** Copies fields one by one, so a stored hash can never ride along into a User. */
-function toUser(stored: NewUser): User {
-  return {
-    userId: stored.userId,
-    displayName: stored.displayName,
-    email: stored.email,
-    department: stored.department,
-    role: stored.role,
-    status: stored.status,
-    createdAt: stored.createdAt,
-    updatedAt: stored.updatedAt,
-    lastLoginAt: stored.lastLoginAt,
-  };
 }
 
 function locate(draft: XmlDocument, userId: string): { index: number; stored: NewUser } {

@@ -248,7 +248,7 @@ same responsibilities.
 | Adapter | Storage | Notes |
 |---|---|---|
 | `file` | One XML file, default `api/data/chatelaine.xml` | Parsed with `fast-xml-parser`. Writes go to a temp file and are renamed into place, and are serialised through an in-process queue. Single process only. Render's disk is wiped on every spin-down, so this adapter is for local runs and tests (D6) |
-| `mongo` | Collections `users`, `serviceRequests` | Native driver. Unique index on `userId`; compound index on `ownerId, accessLevel, createdAt`. Paging with `skip`/`limit` and `countDocuments` (D5) |
+| `mongo` | Collections `users`, `serviceRequests` | Native driver. Unique indexes on `userId` and request `id`; compound index on `ownerId, accessLevel, createdAt`. Stores `priorityRank` and `statusRank`; search text is escaped so it matches literally. Paging with `skip`/`limit` and `countDocuments` (D5) |
 | `dynamo` | One table, single-table design | `PK`/`SK` per item, one GSI for listing by type. See below (D7) |
 
 **DynamoDB keys:**

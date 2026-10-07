@@ -47,21 +47,26 @@ export interface User {
 export type UserView = User;
 
 /**
- * Builds the response shape field by field. A spread would copy whatever extra keys an
- * object happened to carry; this cannot, so no hash can leave through a response.
+ * Copies exactly the User fields, one by one. A spread would carry whatever extra keys an
+ * object happened to have (a password hash, a database _id); this cannot. Every adapter
+ * returns users through it, and toUserView builds on it.
  */
-export function toUserView(user: User): UserView {
+export function toUser(source: User): User {
   return {
-    userId: user.userId,
-    displayName: user.displayName,
-    email: user.email,
-    department: user.department,
-    role: user.role,
-    status: user.status,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    lastLoginAt: user.lastLoginAt,
+    userId: source.userId,
+    displayName: source.displayName,
+    email: source.email,
+    department: source.department,
+    role: source.role,
+    status: source.status,
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt,
+    lastLoginAt: source.lastLoginAt,
   };
+}
+
+export function toUserView(user: User): UserView {
+  return toUser(user);
 }
 
 /** What a repository stores for a new user. Timestamps are set by the caller's clock. */
