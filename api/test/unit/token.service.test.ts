@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
+import { UnauthenticatedError } from '../../src/domain/errors.js';
 import { fixedClock } from '../../src/lib/clock.js';
 import { TokenService } from '../../src/services/token.service.js';
 
@@ -33,5 +34,32 @@ describe('TokenService.issue', () => {
   it('cannot be verified with another secret', () => {
     const { token } = tokens.issue({ sub: 'riya', role: 'ADMIN' });
     expect(() => jwt.verify(token, 'a-different-secret', { algorithms: ['HS256'] })).toThrow();
+  });
+});
+
+describe('TokenService.verify', () => {
+  const settings = { secret: SECRET, ttlSeconds: 7200 };
+  const issuedNow = new TokenService(settings, fixedClock(NOW)).issue({
+    sub: 'riya',
+    role: 'GENERAL',
+  }).token;
+
+  it('returns the claims of a token it issued', () => {
+    const tokens = new TokenService(settings, fixedClock(NOW));
+    expect(tokens.verify(issuedNow)).toEqual({ sub: 'riya', role: 'GENERAL' });
+  });
+
+  it('accepts the token until its expiry and refuses it from then on', () => {
+    const justBefore = new TokenService(settings, fixedClock('2026-10-07T13:59:59.000Z'));
+    const atExpiry = new TokenService(settings, fixedClock('2026-10-07T14:00:00.000Z'));
+    expect(justBefore.verify(issuedNow).sub).toBe('riya');
+    expect(() => atExpiry.verify(issuedNow)).toThrow(UnauthenticatedError);
+  });
+
+  it('refuses a token signed with another algorithm', () => {
+    const hs512 = jwt.sign({ sub: 'riya', role: 'GENERAL' }, SECRET, { algorithm: 'HS512' });
+    expect(() => new TokenService(settings, fixedClock(NOW)).verify(hs512)).toThrow(
+      UnauthenticatedError,
+    );
   });
 });

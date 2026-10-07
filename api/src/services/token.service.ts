@@ -1,9 +1,13 @@
 import jwt from 'jsonwebtoken';
-import type { Role } from '../domain/user.js';
+import { z } from 'zod';
+import { UnauthenticatedError } from '../domain/errors.js';
+import { ROLES, type Role } from '../domain/user.js';
 import type { Clock } from '../lib/clock.js';
 
 const ALGORITHM = 'HS256';
 const MS_PER_SECOND = 1000;
+
+const claimsSchema = z.object({ sub: z.string().min(1), role: z.enum(ROLES) });
 
 export interface TokenClaims {
   readonly sub: string;
@@ -39,5 +43,25 @@ export class TokenService {
       { algorithm: ALGORITHM },
     );
     return { token, expiresAt: new Date(expiresAt * MS_PER_SECOND).toISOString() };
+  }
+
+  /**
+   * Returns the claims of a token this service signed and that has not expired. Anything
+   * else (malformed, wrong signature, another algorithm, expired, unexpected claims) is
+   * UnauthenticatedError. Only HS256 is accepted, so a token cannot choose "none".
+   */
+  verify(token: string): TokenClaims {
+    let payload: unknown;
+    try {
+      payload = jwt.verify(token, this.settings.secret, {
+        algorithms: [ALGORITHM],
+        clockTimestamp: Math.floor(this.clock.now().getTime() / MS_PER_SECOND),
+      });
+    } catch {
+      throw new UnauthenticatedError();
+    }
+    const claims = claimsSchema.safeParse(payload);
+    if (!claims.success) throw new UnauthenticatedError();
+    return claims.data;
   }
 }

@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { expectErrorShape } from '../helpers/error-shape.js';
 import { useTestContext } from '../helpers/test-app.js';
 
-// Until authenticated routes exist (1.7), an unmatched /api path is the simplest route the
-// simulation applies to: it is delayed or failed exactly like any other.
+// An unmatched /api path is delayed and failed like any other route, and keeps these tests
+// about the simulation alone, with no login or store involved.
 const ANY_ROUTE = '/api/probe';
 const SMALL_DELAY_MS = 150;
 
@@ -55,6 +55,17 @@ describe('?delay and ?fail', () => {
   it.each(['yes', 'false', '1'])('rejects fail=%s with 400', async (value) => {
     const res = await request(context().app).get(`${ANY_ROUTE}?fail=${value}`).expect(400);
     expectErrorShape(res.body, 'VALIDATION_FAILED');
+  });
+
+  it('waits before authentication, so a bad token still costs the delay', async () => {
+    const { res, elapsedMs } = await timed(() =>
+      request(context().app)
+        .get(`/api/me?delay=${String(SMALL_DELAY_MS)}`)
+        .set('Authorization', 'Bearer not.a.token'),
+    );
+    expect(res.status).toBe(401);
+    expectErrorShape(res.body, 'UNAUTHENTICATED');
+    expect(elapsedMs).toBeGreaterThanOrEqual(SMALL_DELAY_MS);
   });
 
   it('leaves other query parameters to the route', async () => {

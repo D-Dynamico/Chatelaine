@@ -14,6 +14,7 @@ import { simulation } from './middleware/simulation.js';
 import type { Store } from './repositories/contracts.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
+import { meRoutes } from './routes/me.routes.js';
 import { AuthService } from './services/auth.service.js';
 import { PasswordService } from './services/password.service.js';
 import { TokenService } from './services/token.service.js';
@@ -59,6 +60,7 @@ export function buildApp(deps: AppDeps): Express {
   api.use(healthRoutes({ storage: config.storage.kind, version }));
   api.use(simulation({ enabled: config.simulationEnabled }));
   api.use(authRoutes(services.auth));
+  api.use(meRoutes(services.auth));
   app.use(API_BASE_PATH, api);
 
   app.use(notFound);

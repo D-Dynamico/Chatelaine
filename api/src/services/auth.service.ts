@@ -1,4 +1,4 @@
-import { InvalidCredentialsError } from '../domain/errors.js';
+import { InvalidCredentialsError, SessionInvalidError } from '../domain/errors.js';
 import { toUserView, type Role, type User, type UserView } from '../domain/user.js';
 import type { Clock } from '../lib/clock.js';
 import type { UserRepository } from '../repositories/contracts.js';
@@ -50,5 +50,18 @@ export class AuthService {
     await this.users.touchLastLogin(user.userId, signedInAt);
     const { token, expiresAt } = this.tokens.issue({ sub: user.userId, role: user.role });
     return { token, expiresAt, user: toUserView({ ...user, lastLoginAt: signedInAt }) };
+  }
+
+  /**
+   * Turns a bearer token into the current user, re-reading the user on every request (D10).
+   * A deleted, disabled or re-roled user loses access on their next call, not when the
+   * token expires.
+   */
+  async resolveSession(token: string): Promise<User> {
+    const claims = this.tokens.verify(token);
+    const user = await this.users.findById(claims.sub);
+    // The same rule as signing in: a session lasts only while the user could still sign in.
+    if (!user || !canSignInAs(user, claims.role)) throw new SessionInvalidError();
+    return user;
   }
 }
