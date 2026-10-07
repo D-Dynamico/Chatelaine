@@ -47,6 +47,21 @@ accepts any credentials; `.env.example` sets dummy ones.
 
 All scripts must run unchanged on Windows and Linux (CLAUDE.md).
 
+### Changing dependencies
+
+npm 11.5 drops optional platform bindings (rolldown, lightningcss) from
+`package-lock.json` on any `npm install` after the first, even one that changes nothing.
+`npm ci` on Linux then installs a broken toolchain, while the local machine keeps working
+from its existing `node_modules`. So a dependency change is always made this way:
+
+1. Edit `package.json` by hand (version ranges as D29 and D31 allow).
+2. Delete `node_modules` and `package-lock.json` (`npx rimraf node_modules package-lock.json`).
+3. Run `npm install` once, and do not run it again before committing.
+
+`npm run lint` in `api/` runs `scripts/check-lockfile.js`, which fails if any locked
+package's optional dependency is missing from the lockfile, so a stripped lockfile cannot
+be committed past the gate. Use `npm ci` for every other install.
+
 ## §29 Accounts and deploy
 
 Account creation and dashboard clicks are DJK's steps. Claude Code prepares the config
