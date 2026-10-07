@@ -65,7 +65,7 @@ Sections §33 to §38.
 - Sorting by priority puts `CRITICAL` first in `desc`.
 - Filters by status, priority and `q` combine correctly.
 
-### Admin users (`test/api/admin-users.test.ts`)
+### Admin users (`test/api/admin-users-read.test.ts`, `test/api/admin-users-write.test.ts`)
 
 - Every admin route returns 403 for a General User token, including with an invalid body
   (role check before validation).
