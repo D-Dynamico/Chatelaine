@@ -11,6 +11,7 @@
     "dev": "tsx watch src/main.ts",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
+    "seed": "tsx src/seed/run-seed.ts",
     "lint": "eslint . --max-warnings 0 && node scripts/check-lockfile.js",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
