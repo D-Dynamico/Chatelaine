@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Local environment, never committed (CLAUDE.md)
+.env
+.env.*
+!.env.example
+
+# File adapter data written by seed and dev runs (docs/ARCHITECTURE.md §6)
+api/data/
+
+# Logs and OS or editor noise
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
