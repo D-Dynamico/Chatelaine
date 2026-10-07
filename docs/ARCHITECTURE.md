@@ -68,8 +68,8 @@ chatelaine/
       config.ts               env parsed and validated with zod, fails fast at boot
       domain/                 types, enums, constants, typed errors
       schemas/                zod schemas for bodies, params and queries
-      middleware/             request-context, delay, failure, authenticate,
-                              require-role, validate, error-handler
+      middleware/             request-context, simulation (delay and fail), authenticate,
+                              require-role, validate, login-rate-limit, error-handler
       routes/                 health, auth, me, records, admin-users
       controllers/            HTTP in, service call, HTTP out
       services/               auth, token, password, user, record (all rules live here)
@@ -119,7 +119,7 @@ A request passes through these layers in order. Each one has a single job.
 | Layer | Job | May import |
 |---|---|---|
 | `middleware/request-context` | Request ID (`X-Request-Id`), start time, child logger, `Server-Timing` (wraps `res.writeHead`, §9) | `lib/` |
-| `middleware/delay`, `failure` | Simulation parameters (§9) | `domain/`, `lib/` |
+| `middleware/simulation` | Simulation parameters, `delay` then `fail` (§9). Mounted after `/health` | `domain/`, `schemas/` |
 | `middleware/authenticate` | Verify JWT, re-load user, attach `req.auth` | `services/` |
 | `middleware/require-role` | 403 unless `req.auth.role` is allowed | `domain/` |
 | `middleware/validate` | Parse body, params, query with a zod schema; store the result in `res.locals.validated` | `schemas/` |

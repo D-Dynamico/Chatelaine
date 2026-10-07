@@ -9,6 +9,7 @@ import {
   requestContext,
   SERVER_TIMING_HEADER,
 } from './middleware/request-context.js';
+import { simulation } from './middleware/simulation.js';
 import { healthRoutes } from './routes/health.routes.js';
 
 export const API_BASE_PATH = '/api';
@@ -37,7 +38,9 @@ export function buildApp(deps: AppDeps): Express {
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
   const api = express.Router();
+  // Health first: the boot check must measure the real server, never a simulated one.
   api.use(healthRoutes({ storage: config.storage.kind, version }));
+  api.use(simulation({ enabled: config.simulationEnabled }));
   app.use(API_BASE_PATH, api);
 
   app.use(notFound);
