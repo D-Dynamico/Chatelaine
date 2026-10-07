@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ConflictError, NotFoundError } from '../../src/domain/errors.js';
+import type { UserListQuery } from '../../src/domain/user.js';
 import type { Store } from '../../src/repositories/contracts.js';
-import { aUser, T0, T1 } from '../helpers/fixtures.js';
+import { aUser, T0, T1, userSet } from '../helpers/fixtures.js';
 
 export interface StoreHandle {
   readonly store: Store;
@@ -98,6 +99,80 @@ export function describeUserRepositoryContract(
       const found = await users().findById('riya');
       Object.assign(found ?? {}, { role: 'ADMIN' });
       expect((await users().findById('riya'))?.role).toBe('GENERAL');
+    });
+
+    describe('listing', () => {
+      const listQuery = (overrides: Partial<UserListQuery> = {}): UserListQuery => ({
+        sort: 'userId',
+        order: 'asc',
+        page: 1,
+        pageSize: 50,
+        ...overrides,
+      });
+      const listIds = async (overrides: Partial<UserListQuery> = {}) =>
+        (await users().list(listQuery(overrides))).items.map((user) => user.userId);
+
+      beforeEach(async () => {
+        for (const user of userSet()) await users().create(user);
+      });
+
+      it('sorts by userId by default and never returns a hash', async () => {
+        const page = await users().list(listQuery());
+        expect(page.items.map((user) => user.userId)).toEqual([
+          'arjun',
+          'kabir',
+          'meera.admin',
+          'riya',
+          'vikram.admin',
+        ]);
+        expect(page.total).toBe(5);
+        for (const user of page.items) expect(user).not.toHaveProperty('passwordHash');
+      });
+
+      it('filters by role and status, and searches userId, name and email', async () => {
+        expect(await listIds({ role: 'ADMIN' })).toEqual(['meera.admin', 'vikram.admin']);
+        expect(await listIds({ status: 'DISABLED' })).toEqual(['kabir', 'vikram.admin']);
+        expect(await listIds({ role: 'ADMIN', status: 'ACTIVE' })).toEqual(['meera.admin']);
+        expect(await listIds({ q: 'NAIR' })).toEqual(['meera.admin']);
+        expect(await listIds({ q: 'iya' })).toEqual(['riya']);
+        expect(await listIds({ q: 'vikram.admin@' })).toEqual(['vikram.admin']);
+      });
+
+      it('puts never-signed-in users first ascending and last descending', async () => {
+        expect(await listIds({ sort: 'lastLoginAt' })).toEqual([
+          'kabir',
+          'riya',
+          'arjun',
+          'vikram.admin',
+          'meera.admin',
+        ]);
+        expect(await listIds({ sort: 'lastLoginAt', order: 'desc' })).toEqual([
+          'meera.admin',
+          'vikram.admin',
+          'arjun',
+          'riya',
+          'kabir',
+        ]);
+      });
+
+      it('sorts by display name and pages with a total', async () => {
+        expect(await listIds({ sort: 'displayName', order: 'desc' })).toEqual([
+          'vikram.admin',
+          'riya',
+          'meera.admin',
+          'kabir',
+          'arjun',
+        ]);
+        const second = await users().list(listQuery({ page: 2, pageSize: 2 }));
+        expect(second.items.map((user) => user.userId)).toEqual(['meera.admin', 'riya']);
+        expect(second.total).toBe(5);
+      });
+
+      it('counts admins, optionally by status', async () => {
+        expect(await users().countAdmins({})).toBe(2);
+        expect(await users().countAdmins({ status: 'ACTIVE' })).toBe(1);
+        expect(await users().countAdmins({ status: 'DISABLED' })).toBe(1);
+      });
     });
 
     it('empties on reset', async () => {

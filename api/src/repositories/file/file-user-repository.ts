@@ -1,6 +1,15 @@
-import { ConflictError, NotFoundError } from '../../domain/errors.js';
-import type { NewUser, User, UserCredentials, UserPatch } from '../../domain/user.js';
+import { ConflictError, userNotFound } from '../../domain/errors.js';
+import type { Page } from '../../domain/paging.js';
+import type {
+  NewUser,
+  User,
+  UserCredentials,
+  UserListQuery,
+  UserPatch,
+  UserStatus,
+} from '../../domain/user.js';
 import type { UserRepository } from '../contracts.js';
+import { countAdmins, queryUsers } from '../in-memory-queries.js';
 import type { XmlDocument } from './xml-document.js';
 
 /** What a file repository needs from the store: a copy to read, and a safe way to change it. */
@@ -22,10 +31,6 @@ function toUser(stored: NewUser): User {
     updatedAt: stored.updatedAt,
     lastLoginAt: stored.lastLoginAt,
   };
-}
-
-function userNotFound(userId: string): NotFoundError {
-  return new NotFoundError('USER_NOT_FOUND', `No user has the ID "${userId}".`);
 }
 
 function locate(draft: XmlDocument, userId: string): { index: number; stored: NewUser } {
@@ -81,6 +86,18 @@ export class FileUserRepository implements UserRepository {
       const { index, stored } = locate(draft, userId);
       draft.users[index] = { ...stored, lastLoginAt: at };
     });
+  }
+
+  list(query: UserListQuery): Promise<Page<User>> {
+    return Promise.resolve(queryUsers(this.allUsers(), query));
+  }
+
+  countAdmins(filter: { status?: UserStatus }): Promise<number> {
+    return Promise.resolve(countAdmins(this.allUsers(), filter));
+  }
+
+  private allUsers(): User[] {
+    return this.store.read().users.map(toUser);
   }
 
   private find(userId: string): NewUser | undefined {

@@ -1,3 +1,5 @@
+import type { PageRequest, SortOrder } from './paging.js';
+
 /** Users and their roles (docs/ARCHITECTURE.md §5). */
 
 export const ROLES = ['GENERAL', 'ADMIN'] as const;
@@ -8,6 +10,25 @@ export type UserStatus = (typeof USER_STATUSES)[number];
 
 /** 3 to 32 characters of lower-case letters, digits, dots, underscores and hyphens. */
 export const USER_ID_PATTERN = /^[a-z0-9._-]{3,32}$/;
+
+export const USER_SORT_FIELDS = [
+  'userId',
+  'displayName',
+  'role',
+  'status',
+  'createdAt',
+  'lastLoginAt',
+] as const;
+export type UserSortField = (typeof USER_SORT_FIELDS)[number];
+
+export interface UserListQuery extends PageRequest {
+  readonly role?: Role;
+  readonly status?: UserStatus;
+  /** Case-insensitive substring of the userId, display name or email. */
+  readonly q?: string;
+  readonly sort: UserSortField;
+  readonly order: SortOrder;
+}
 
 /** A user as the rest of the app sees it. The password hash is never part of this type. */
 export interface User {

@@ -152,3 +152,44 @@ export function requestSet(): ServiceRequest[] {
     }),
   ];
 }
+
+/**
+ * Five users for list tests: two admins (one disabled), a disabled General User, and two
+ * users who have never signed in, so a lastLoginAt sort must place nulls consistently.
+ */
+export function userSet(): NewUser[] {
+  return [
+    aUser({
+      userId: 'arjun',
+      displayName: 'Arjun Rao',
+      email: 'arjun@chatelaine.test',
+      createdAt: day(2),
+      lastLoginAt: day(10),
+    }),
+    aUser({
+      userId: 'kabir',
+      displayName: 'Kabir Singh',
+      email: 'kabir@chatelaine.test',
+      status: 'DISABLED',
+      createdAt: day(3),
+    }),
+    aUser({
+      userId: 'meera.admin',
+      displayName: 'Meera Nair',
+      email: 'meera.admin@chatelaine.test',
+      role: 'ADMIN',
+      createdAt: day(1),
+      lastLoginAt: day(12),
+    }),
+    aUser({ userId: 'riya', displayName: 'Riya Sharma', createdAt: day(4) }),
+    aUser({
+      userId: 'vikram.admin',
+      displayName: 'Vikram Menon',
+      email: 'vikram.admin@chatelaine.test',
+      role: 'ADMIN',
+      status: 'DISABLED',
+      createdAt: day(5),
+      lastLoginAt: day(11),
+    }),
+  ];
+}

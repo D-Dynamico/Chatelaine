@@ -5,7 +5,14 @@ import type {
   RecordScope,
   ServiceRequest,
 } from '../domain/service-request.js';
-import type { NewUser, User, UserCredentials, UserPatch } from '../domain/user.js';
+import type {
+  NewUser,
+  User,
+  UserCredentials,
+  UserListQuery,
+  UserPatch,
+  UserStatus,
+} from '../domain/user.js';
 
 /**
  * The only storage interface services know about (docs/ARCHITECTURE.md §6). Every adapter
@@ -23,6 +30,10 @@ export interface UserRepository {
   delete(userId: string): Promise<void>;
   /** Sets lastLoginAt only; updatedAt is about profile changes, not sign-ins. */
   touchLastLogin(userId: string, at: string): Promise<void>;
+  /** Filters, sorts and pages; ties break on userId. Never returns hashes. */
+  list(query: UserListQuery): Promise<Page<User>>;
+  /** Admins in total, or only those with the given status. */
+  countAdmins(filter: { status?: UserStatus }): Promise<number>;
 }
 
 export interface RecordRepository {

@@ -11,6 +11,7 @@ import {
   type RecordSortField,
   type ServiceRequest,
 } from '../domain/service-request.js';
+import type { User, UserListQuery, UserSortField, UserStatus } from '../domain/user.js';
 
 /**
  * Filtering, sorting and paging for adapters that work on loaded items: the XML file, and
@@ -110,4 +111,39 @@ export function countRecords(items: readonly ServiceRequest[]): RecordCounts {
     counts.byAccessLevel[item.accessLevel] += 1;
   }
   return { ...counts, total: items.length };
+}
+
+const USER_SORT_KEYS: Readonly<Record<UserSortField, (user: User) => SortValue>> = {
+  userId: (user) => user.userId,
+  displayName: (user) => user.displayName,
+  role: (user) => user.role,
+  status: (user) => user.status,
+  createdAt: (user) => user.createdAt,
+  lastLoginAt: (user) => user.lastLoginAt,
+};
+
+function matchesUserQuery(user: User, query: UserListQuery): boolean {
+  return (
+    (query.role === undefined || user.role === query.role) &&
+    (query.status === undefined || user.status === query.status) &&
+    (query.q === undefined || containsText(query.q, user.userId, user.displayName, user.email))
+  );
+}
+
+export function queryUsers(users: readonly User[], query: UserListQuery): Page<User> {
+  const matching = users.filter((user) => matchesUserQuery(user, query));
+  return sortAndPage(
+    matching,
+    USER_SORT_KEYS[query.sort],
+    (user) => user.userId,
+    query.order,
+    query,
+  );
+}
+
+export function countAdmins(users: readonly User[], filter: { status?: UserStatus }): number {
+  return users.filter(
+    (user) =>
+      user.role === 'ADMIN' && (filter.status === undefined || user.status === filter.status),
+  ).length;
 }

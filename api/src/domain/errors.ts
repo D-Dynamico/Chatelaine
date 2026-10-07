@@ -110,3 +110,8 @@ export class ConflictError extends AppError {
     super(code, message);
   }
 }
+
+/** Shared by every adapter and service, so the message is the same wherever it starts. */
+export function userNotFound(userId: string): NotFoundError {
+  return new NotFoundError('USER_NOT_FOUND', `No user has the ID "${userId}".`);
+}

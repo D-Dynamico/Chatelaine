@@ -12,6 +12,7 @@ import {
 } from './middleware/request-context.js';
 import { simulation } from './middleware/simulation.js';
 import type { Store } from './repositories/contracts.js';
+import { adminUsersRoutes } from './routes/admin-users.routes.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 import { meRoutes } from './routes/me.routes.js';
@@ -20,6 +21,7 @@ import { AuthService } from './services/auth.service.js';
 import { PasswordService } from './services/password.service.js';
 import { RecordService } from './services/record.service.js';
 import { TokenService } from './services/token.service.js';
+import { UserService } from './services/user.service.js';
 
 export const API_BASE_PATH = '/api';
 /** Every body this API accepts is a small form; anything larger is a mistake or abuse. */
@@ -40,7 +42,8 @@ function createServices(deps: AppDeps) {
   const tokens = new TokenService(deps.config.jwt, deps.clock);
   const auth = new AuthService(deps.store.users, passwords, tokens, deps.clock);
   const records = new RecordService(deps.store.records, deps.store.users);
-  return { auth, records };
+  const users = new UserService(deps.store.users, deps.store.records);
+  return { auth, records, users };
 }
 
 /**
@@ -65,6 +68,7 @@ export function buildApp(deps: AppDeps): Express {
   api.use(authRoutes(services.auth));
   api.use(meRoutes(services.auth));
   api.use(recordsRoutes(services.auth, services.records));
+  api.use('/admin/users', adminUsersRoutes(services.auth, services.users));
   app.use(API_BASE_PATH, api);
 
   app.use(notFound);
