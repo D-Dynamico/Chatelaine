@@ -15,8 +15,10 @@ import type { Store } from './repositories/contracts.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 import { meRoutes } from './routes/me.routes.js';
+import { recordsRoutes } from './routes/records.routes.js';
 import { AuthService } from './services/auth.service.js';
 import { PasswordService } from './services/password.service.js';
+import { RecordService } from './services/record.service.js';
 import { TokenService } from './services/token.service.js';
 
 export const API_BASE_PATH = '/api';
@@ -37,7 +39,8 @@ function createServices(deps: AppDeps) {
   const passwords = new PasswordService();
   const tokens = new TokenService(deps.config.jwt, deps.clock);
   const auth = new AuthService(deps.store.users, passwords, tokens, deps.clock);
-  return { auth };
+  const records = new RecordService(deps.store.records, deps.store.users);
+  return { auth, records };
 }
 
 /**
@@ -61,6 +64,7 @@ export function buildApp(deps: AppDeps): Express {
   api.use(simulation({ enabled: config.simulationEnabled }));
   api.use(authRoutes(services.auth));
   api.use(meRoutes(services.auth));
+  api.use(recordsRoutes(services.auth, services.records));
   app.use(API_BASE_PATH, api);
 
   app.use(notFound);

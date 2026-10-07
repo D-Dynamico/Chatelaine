@@ -6,6 +6,7 @@ import { pino, type Logger } from 'pino';
 import { afterEach, beforeEach } from 'vitest';
 import { buildApp } from '../../src/app.js';
 import { loadConfig, type Config } from '../../src/config.js';
+import type { ServiceRequest } from '../../src/domain/service-request.js';
 import type { NewUser } from '../../src/domain/user.js';
 import { fixedClock, type Clock } from '../../src/lib/clock.js';
 import { FileStore } from '../../src/repositories/file/file-store.js';
@@ -29,6 +30,7 @@ export const silentLogger = pino({ level: 'silent' });
 
 export interface TestContextOptions {
   readonly users?: readonly NewUser[];
+  readonly requests?: readonly ServiceRequest[];
   readonly env?: Record<string, string>;
   readonly clock?: Clock;
   readonly logger?: Logger;
@@ -66,6 +68,7 @@ export async function createTestContext(options: TestContextOptions = {}): Promi
   const store = new FileStore(join(dir, 'chatelaine.xml'));
   await store.init();
   for (const user of options.users ?? []) await store.users.create(user);
+  await store.records.insertMany(options.requests ?? []);
 
   const config = testConfig(options.env);
   const app = buildApp({
@@ -81,7 +84,8 @@ export async function createTestContext(options: TestContextOptions = {}): Promi
     config,
     cleanup: async () => {
       await store.close();
-      await rm(dir, { recursive: true, force: true });
+      // Retries cover Windows briefly holding the file after a failed test.
+      await rm(dir, { recursive: true, force: true, maxRetries: 3 });
     },
   };
 }
