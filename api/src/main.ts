@@ -2,6 +2,7 @@ import { buildApp } from './app.js';
 import { ConfigError, loadConfig, type Config } from './config.js';
 import { createLogger } from './lib/logger.js';
 import { loadEnvFileIfPresent, readPackageVersion } from './lib/runtime.js';
+import { createStore } from './repositories/create-store.js';
 
 function readConfigOrExit(): Config {
   try {
@@ -17,21 +18,26 @@ function readConfigOrExit(): Config {
   }
 }
 
-function start(): void {
+async function start(): Promise<void> {
   const config = readConfigOrExit();
   const logger = createLogger(config);
+  const store = createStore(config.storage);
+  await store.init();
   const app = buildApp({ config, logger, version: readPackageVersion() });
 
   const server = app.listen(config.port, () => {
     logger.info({ port: config.port, storage: config.storage.kind }, 'API listening');
   });
 
+  // Finish in-flight requests, then let the store flush its last write before exiting.
   const shutdown = (signal: NodeJS.Signals): void => {
     logger.info({ signal }, 'shutting down');
-    server.close(() => process.exit(0));
+    server.close(() => {
+      void store.close().then(() => process.exit(0));
+    });
   };
   process.once('SIGTERM', shutdown);
   process.once('SIGINT', shutdown);
 }
 
-start();
+await start();
