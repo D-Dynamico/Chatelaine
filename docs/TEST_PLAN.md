@@ -22,10 +22,15 @@ Sections §33 to §38.
 - **No sleeping in tests.** Delay tests use fake timers or measure with a small real delay
   (under 200 ms); web tests use fake timers for debounce.
 - **Deterministic data.** Tests build their own fixtures; the seed is tested separately.
+- **One app per test.** API tests get a fresh app and temp store for every test
+  (`useTestContext`), because the rate limiter and stored sign-in times are state that
+  otherwise leaks between tests.
+- **Proving a guard bites.** A check is removed by hand, inside one command that restores it
+  through `trap ... EXIT`, so a hung or interrupted run cannot leave the guard removed.
 
 ## §34 API tests
 
-### Auth (`test/api/auth.test.ts`)
+### Auth (`test/api/auth-login.test.ts`, `test/api/auth-session.test.ts`)
 
 - Login succeeds for each seed role with the matching role; response matches `UserView`
   and includes a token that `GET /me` accepts.
@@ -86,8 +91,11 @@ Sections §33 to §38.
 
 ## §35 Adapter contract tests
 
-`test/contract/repository.contract.ts` exports one suite that takes a store factory. It is
-run by `file.contract.test.ts`, `mongo.contract.test.ts` and `dynamo.contract.test.ts`.
+`test/contract/` holds one suite per repository (`user-repository.contract.ts`, and
+`record-repository.contract.ts` from Stage 2), each taking a store factory. They are run by
+`file.contract.test.ts`, `mongo.contract.test.ts` and `dynamo.contract.test.ts`, which add
+any checks specific to their adapter (for the file adapter: restart fidelity, concurrent
+writes, no temp file left behind, a corrupt file refused).
 
 - Each test gets a fresh store: a new temp file, a new database name, or a new table name.
 - Users: create, duplicate create throws `ConflictError`, find, credentials include the
