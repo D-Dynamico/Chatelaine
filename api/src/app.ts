@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import type { Config } from './config.js';
+import type { Clock } from './lib/clock.js';
 import type { Logger } from './lib/logger.js';
 import { errorHandler, notFound } from './middleware/error-handler.js';
 import {
@@ -10,7 +11,12 @@ import {
   SERVER_TIMING_HEADER,
 } from './middleware/request-context.js';
 import { simulation } from './middleware/simulation.js';
+import type { Store } from './repositories/contracts.js';
+import { authRoutes } from './routes/auth.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
+import { AuthService } from './services/auth.service.js';
+import { PasswordService } from './services/password.service.js';
+import { TokenService } from './services/token.service.js';
 
 export const API_BASE_PATH = '/api';
 /** Every body this API accepts is a small form; anything larger is a mistake or abuse. */
@@ -20,7 +26,17 @@ const EXPOSED_HEADERS = [REQUEST_ID_HEADER, SERVER_TIMING_HEADER, 'Location'];
 export interface AppDeps {
   readonly config: Config;
   readonly logger: Logger;
+  readonly store: Store;
+  readonly clock: Clock;
   readonly version: string;
+}
+
+/** The composition root: every service is built here from the store, config and clock. */
+function createServices(deps: AppDeps) {
+  const passwords = new PasswordService();
+  const tokens = new TokenService(deps.config.jwt, deps.clock);
+  const auth = new AuthService(deps.store.users, passwords, tokens, deps.clock);
+  return { auth };
 }
 
 /**
@@ -29,6 +45,7 @@ export interface AppDeps {
  */
 export function buildApp(deps: AppDeps): Express {
   const { config, logger, version } = deps;
+  const services = createServices(deps);
   const app = express();
 
   app.set('trust proxy', config.trustProxy);
@@ -41,6 +58,7 @@ export function buildApp(deps: AppDeps): Express {
   // Health first: the boot check must measure the real server, never a simulated one.
   api.use(healthRoutes({ storage: config.storage.kind, version }));
   api.use(simulation({ enabled: config.simulationEnabled }));
+  api.use(authRoutes(services.auth));
   app.use(API_BASE_PATH, api);
 
   app.use(notFound);

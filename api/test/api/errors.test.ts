@@ -5,20 +5,20 @@ import { INTERNAL_ERROR_MESSAGE } from '../../src/domain/errors.js';
 import { errorHandler } from '../../src/middleware/error-handler.js';
 import { requestContext } from '../../src/middleware/request-context.js';
 import { expectErrorShape } from '../helpers/error-shape.js';
-import { buildTestApp, silentLogger } from '../helpers/test-app.js';
+import { useTestContext, silentLogger } from '../helpers/test-app.js';
 
 describe('error responses', () => {
-  const app = buildTestApp();
+  const context = useTestContext();
 
   it('answers an unknown route with 404 NOT_FOUND in the one error shape', async () => {
-    const res = await request(app).get('/api/nothing-here').expect(404);
+    const res = await request(context().app).get('/api/nothing-here').expect(404);
     expectErrorShape(res.body, 'NOT_FOUND');
     expect(res.headers['x-request-id']).toBeDefined();
     expect(res.headers['server-timing']).toBeDefined();
   });
 
   it('answers malformed JSON with 400 VALIDATION_FAILED', async () => {
-    const res = await request(app)
+    const res = await request(context().app)
       .post('/api/health')
       .set('Content-Type', 'application/json')
       .send('{"userId":')
@@ -27,7 +27,7 @@ describe('error responses', () => {
   });
 
   it('answers an oversized body with 400 VALIDATION_FAILED', async () => {
-    const res = await request(app)
+    const res = await request(context().app)
       .post('/api/health')
       .send({ padding: 'x'.repeat(20_000) })
       .expect(400);

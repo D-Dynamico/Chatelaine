@@ -1,9 +1,8 @@
 import { Writable } from 'node:stream';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { buildApp } from '../../src/app.js';
 import { createLogger } from '../../src/lib/logger.js';
-import { testConfig, TEST_VERSION } from '../helpers/test-app.js';
+import { createTestContext } from '../helpers/test-app.js';
 
 function captureLogs(): { stream: Writable; text: () => string } {
   const chunks: string[] = [];
@@ -20,11 +19,12 @@ describe('request logging', () => {
   it('logs each request with its ID but never the bearer token', async () => {
     const logs = captureLogs();
     const logger = createLogger({ env: 'test', logLevel: 'info' }, logs.stream);
-    const app = buildApp({ config: testConfig(), logger, version: TEST_VERSION });
+    const context = await createTestContext({ logger });
 
-    const res = await request(app)
+    const res = await request(context.app)
       .get('/api/health')
       .set('Authorization', 'Bearer secret-token-value');
+    await context.cleanup();
 
     const output = logs.text();
     expect(output).toContain(String(res.headers['x-request-id']));

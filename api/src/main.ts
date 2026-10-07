@@ -1,5 +1,6 @@
 import { buildApp } from './app.js';
 import { ConfigError, loadConfig, type Config } from './config.js';
+import { systemClock } from './lib/clock.js';
 import { createLogger } from './lib/logger.js';
 import { loadEnvFileIfPresent, readPackageVersion } from './lib/runtime.js';
 import { createStore } from './repositories/create-store.js';
@@ -23,7 +24,13 @@ async function start(): Promise<void> {
   const logger = createLogger(config);
   const store = createStore(config.storage);
   await store.init();
-  const app = buildApp({ config, logger, version: readPackageVersion() });
+  const app = buildApp({
+    config,
+    logger,
+    store,
+    clock: systemClock,
+    version: readPackageVersion(),
+  });
 
   const server = app.listen(config.port, () => {
     logger.info({ port: config.port, storage: config.storage.kind }, 'API listening');
