@@ -13,9 +13,10 @@ scoped to where they are used.
 ```
 app/
   core/          singletons, imported by app.config.ts, layout and features
-    auth/        auth.service, session-store, token-storage, auth-guard, role-guard,
-                 guest-guard
-    http/        *-interceptor files, api-url, api-error, http-context tokens
+    auth/        auth.service, user.service, session-store, token-storage, auth-guard,
+                 role-guard, guest-guard
+    http/        *-interceptor files, api-interceptors (the ordered chain), api-paths,
+                 api-base-url, api-error, http-context-tokens
     init/        app-initializer, boot-status
     latency/     latency-settings-store, request-log-store
     storage/     web-storage (session and local storage that never throw), storage-keys
@@ -67,6 +68,9 @@ hosts `features/latency-lab`'s panel (D34). `features/admin` is imported only th
   `/dashboard`.
 - Route titles are set with the router's `title` property and a `TitleStrategy` that
   appends " | Chatelaine".
+
+`app/testing/` holds spec-only fixtures and `provideTestHttp()` (HttpClient with the real
+interceptor chain). It is excluded from the app build.
 
 ## §15 Services and state
 
@@ -127,10 +131,10 @@ matters: the last one sits closest to the network.
 | # | Interceptor | Does |
 |---|---|---|
 | 1 | `apiUrlInterceptor` | Prefixes relative `api/...` URLs with `environment.apiBaseUrl` |
-| 2 | `authInterceptor` | Adds `Authorization: Bearer` when a token exists, except on `/health` and `/auth/login` |
+| 2 | `authInterceptor` | Adds `Authorization: Bearer` when a token exists, except on `/health` and `/auth/login`. Only URLs under `apiBaseUrl` get it, so the token never reaches another origin |
 | 3 | `simulationInterceptor` | Maps the URL to an endpoint group and appends `delay` and, if armed, `fail=true` from `LatencySettingsStore`. Disarms fail-next after use |
 | 4 | `requestLogInterceptor` | Records start, end, status, outcome and the `Server-Timing` split in `RequestLogStore`. Classifies an `ApiError` with code `CLIENT_TIMEOUT` as `timeout`, any other `ApiError` as `error`, and an unsubscribe with neither as `cancelled` |
-| 5 | `errorInterceptor` | Converts `HttpErrorResponse` to `ApiError { status, code, message, details }`. An error that is already an `ApiError` (the `CLIENT_TIMEOUT` from #6) passes through unchanged. On 401 `UNAUTHENTICATED` or `SESSION_INVALID`, clears the session and navigates to `/login?reason=expired`, except on login and on requests carrying `SILENT_AUTH` (§16) |
+| 5 | `errorInterceptor` | Converts `HttpErrorResponse` to `ApiError { status, code, message, details }`. An error that is already an `ApiError` (the `CLIENT_TIMEOUT` from #6) passes through unchanged. On 401 `UNAUTHENTICATED` or `SESSION_INVALID`, clears the session and navigates to `/login?reason=expired&returnUrl=<current path>`, so signing in again returns the user to where they were, except on login and on requests carrying `SILENT_AUTH` (§16) |
 | 6 | `timeoutInterceptor` | Applies `timeout(settings.timeoutMs)` (default 12 s). Emits `ApiError` with code `CLIENT_TIMEOUT` |
 
 **Why this order.** The request log must sit outside the timeout. If the timeout were
