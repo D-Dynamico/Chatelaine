@@ -18,6 +18,7 @@ app/
     http/        *-interceptor files, api-url, api-error, http-context tokens
     init/        app-initializer, boot-status
     latency/     latency-settings-store, request-log-store
+    storage/     web-storage (session and local storage that never throw), storage-keys
     models/      API types mirroring docs/API.md
     theme/       theme.service (light, dark, system)
   shared/        presentational only: inputs and outputs, no app services

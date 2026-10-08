@@ -60,10 +60,10 @@ dashboard. Four changes came out of that review:
 | `--ink-muted` | `#52626C` | `#9DADB3` | Secondary text, helper text |
 | `--page` | `#E8EDEE` | `#151D21` | Page background |
 | `--surface` | `#F8FAFA` | `#1D282D` | Panels, dialogs, table body |
-| `--line` | `#C5D0D3` | `#33444B` | Dividers, input borders |
+| `--line` | `#C5D0D3` | `#33444B` | Decorative dividers only (input borders use `--ink-muted`, see below) |
 | `--verdigris` | `#2D6B64` | `#73B8AD` | General access: text, icon, badge border |
 | `--verdigris-tint` | `#D6E8E4` | `#21403C` | General access: badge fill |
-| `--brass` | `#8A5F17` | `#DDB264` | Admin access: text, icon, badge border |
+| `--brass` | `#855B15` | `#DDB264` | Admin access: text, icon, badge border |
 | `--brass-tint` | `#F0E1C2` | `#47391F` | Admin access: badge fill |
 | `--signal` | `#A3322C` | `#EE8178` | Errors, destructive actions |
 | `--signal-tint` | `#F6DEDB` | `#4A2523` | Error state backgrounds |
@@ -107,6 +107,33 @@ Sentence case everywhere. No all-caps labels, no letter-spaced eyebrows.
 
 Angular Material is themed from these tokens through the `mat.theme` mixin and the
 component override mixins. No `::ng-deep`, no overriding Material's internal class names.
+
+**Contrast, measured at Stage 3** (ratios in the 2026-10-08 session note). Two pairs failed
+the plan and were changed. Light `--brass` was `#8A5F17`, 4.36:1 on `--brass-tint`, below
+AA for badge text; it is now `#855B15` (4.64:1). `--line` is about 1.5:1 against both
+backgrounds, which is fine for a divider but not for an input border, a control boundary
+that needs 3:1 (WCAG 1.4.11). Material's `outline` role (input borders) maps to
+`--ink-muted` (6:1 or more), and `outline-variant` (dividers) maps to `--line`.
+
+### Icons
+
+**Material Symbols Outlined**, loaded from Google Fonts in `index.html` with `icon_names=`
+listing only the icons below (alphabetical, as the API requires), and set as `<mat-icon>`'s
+default font set. Adding an icon means adding its name to that list.
+
+| Icon | Where |
+|---|---|
+| `lock` | Admin-level access chip |
+| `radio_button_unchecked`, `pending`, `check_circle`, `archive` | Status chip: open, in progress, resolved, closed |
+| `light_mode`, `dark_mode`, `contrast` | Theme toggle: light, dark, system |
+| `visibility`, `visibility_off` | Show or hide password |
+| `timeline`, `close` | Latency lab drawer |
+| `logout` | Sign out |
+| `cloud_off`, `refresh` | Server not responding, "Try again" |
+| `search` | Search fields |
+| `expand_more`, `expand_less` | Internal note row |
+| `person_add`, `edit`, `delete`, `block`, `more_vert` | Create user, user row actions, disable |
+| `check` | userId available |
 
 ## §23 Screens
 

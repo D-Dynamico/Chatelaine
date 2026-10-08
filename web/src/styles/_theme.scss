@@ -1,0 +1,69 @@
+@use '@angular/material' as mat;
+
+// Material's structure (density, shape, motion) with our tokens as its colors. The palette
+// only seeds roles nothing below overrides; every role a component actually paints with
+// points at a token, so light and dark follow the same CSS variables as our own styles.
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        theme-type: color-scheme,
+      ),
+      typography: (
+        plain-family: var(--font-family),
+        brand-family: var(--font-family),
+      ),
+      density: 0,
+    )
+  );
+
+  @include mat.theme-overrides(
+    (
+      // Slate ink drives buttons, focus and selection: color means access, nothing else (§21).
+      primary: var(--ink),
+      on-primary: var(--surface),
+      primary-container: var(--page),
+      on-primary-container: var(--ink),
+      secondary-container: var(--page),
+      on-secondary-container: var(--ink),
+      background: var(--page),
+      on-background: var(--ink),
+      surface: var(--surface),
+      on-surface: var(--ink),
+      on-surface-variant: var(--ink-muted),
+      surface-variant: var(--page),
+      surface-container-lowest: var(--surface),
+      surface-container-low: var(--surface),
+      surface-container: var(--surface),
+      surface-container-high: var(--surface),
+      surface-container-highest: var(--page),
+      inverse-surface: var(--ink),
+      inverse-on-surface: var(--surface),
+      inverse-primary: var(--surface),
+      // Input borders mark a control, so they need 3:1 (WCAG 1.4.11); --line is 1.5:1 and
+      // stays for decorative dividers only.
+      outline: var(--ink-muted),
+      outline-variant: var(--line),
+      error: var(--signal),
+      on-error: var(--surface),
+      error-container: var(--signal-tint),
+      on-error-container: var(--signal),
+      corner-extra-small: var(--radius-control),
+      corner-small: var(--radius-control),
+      corner-medium: var(--radius-panel),
+      corner-large: var(--radius-panel),
+      corner-extra-large: var(--radius-panel)
+    )
+  );
+
+  @include mat.button-overrides(
+    (
+      filled-container-shape: var(--radius-control),
+      outlined-container-shape: var(--radius-control),
+      text-container-shape: var(--radius-control),
+      protected-container-shape: var(--radius-control),
+      tonal-container-shape: var(--radius-control),
+    )
+  );
+}

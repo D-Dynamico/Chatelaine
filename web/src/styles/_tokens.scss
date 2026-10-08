@@ -1,0 +1,79 @@
+// Design tokens from docs/UI.md §22. Components use these by name and never hard-code a
+// value. Light is the default; dark applies when the OS asks for it and the user has not
+// chosen light, or when the user chooses dark. ThemeService sets `data-theme`.
+
+@mixin light-colors {
+  --ink: #1e2a33;
+  --ink-muted: #52626c;
+  --page: #e8edee;
+  --surface: #f8fafa;
+  --line: #c5d0d3;
+  --verdigris: #2d6b64;
+  --verdigris-tint: #d6e8e4;
+  --brass: #855b15;
+  --brass-tint: #f0e1c2;
+  --signal: #a3322c;
+  --signal-tint: #f6dedb;
+}
+
+@mixin dark-colors {
+  --ink: #e4eaeb;
+  --ink-muted: #9dadb3;
+  --page: #151d21;
+  --surface: #1d282d;
+  --line: #33444b;
+  --verdigris: #73b8ad;
+  --verdigris-tint: #21403c;
+  --brass: #ddb264;
+  --brass-tint: #47391f;
+  --signal: #ee8178;
+  --signal-tint: #4a2523;
+}
+
+:root {
+  @include light-colors;
+  // Material resolves its colors with light-dark(), which follows color-scheme rather than
+  // our attribute, so every theme rule sets both (§22).
+  color-scheme: light dark;
+
+  --font-family: 'Public Sans', system-ui, sans-serif;
+  --type-display: 700 2.0625rem / 2.5rem var(--font-family);
+  --type-title: 600 1.4375rem / 1.875rem var(--font-family);
+  --type-heading: 600 1.1875rem / 1.625rem var(--font-family);
+  --type-body: 400 1rem / 1.5rem var(--font-family);
+  --type-small: 400 0.8125rem / 1.125rem var(--font-family);
+  --type-small-strong: 600 0.8125rem / 1.125rem var(--font-family);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-tag: 999px;
+
+  --keyline: 4px;
+  --content-max: 1200px;
+  --reading-max: 72ch;
+  --crossfade: 150ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-colors;
+  }
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  @include dark-colors;
+  color-scheme: dark;
+}

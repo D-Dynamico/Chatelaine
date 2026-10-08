@@ -1,0 +1,30 @@
+@use 'styles/tokens';
+@use 'styles/theme';
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: var(--type-body);
+}
+
+// One focus ring everywhere (§26). --ink flips with the theme, so the ring inverts on dark.
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --crossfade: 0ms;
+  }
+}
