@@ -164,8 +164,8 @@ that test is not protecting anything. Details: `docs/TEST_PLAN.md`.
 
 ## Status
 
-Stages 0 to 3 (docs, API foundation, data and admin API, web foundation) are done and
-pushed; Stage 4 (dashboard) is next. See `docs/sessions/2026-10-08-stage3.md`.
+Stages 0 to 4 (docs, API foundation, data and admin API, web foundation, dashboard) are
+done and pushed; Stage 5 (admin) is next. See `docs/sessions/2026-10-08-stage4.md`.
 Stages and exit criteria: `docs/WORKFLOWS.md` §31.
 Open questions are tracked in the newest session note, not here.
 
