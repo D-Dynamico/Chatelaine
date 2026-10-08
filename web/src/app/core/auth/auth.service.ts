@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { type Observable, catchError, map, of, tap } from 'rxjs';
 import { ApiError } from '../http/api-error';
 import { API_PATHS } from '../http/api-paths';
-import { silentAuth } from '../http/http-context-tokens';
+import { bootRestore } from '../http/http-context-tokens';
 import { type LoginRequest, type LoginResponse } from '../models/auth';
 import { type UserView } from '../models/user';
 import { SessionStore } from './session-store';
@@ -36,7 +36,7 @@ export class AuthService {
    */
   restore(): Observable<void> {
     if (this.session.token() === null) return of(undefined);
-    return this.users.getProfile(silentAuth()).pipe(
+    return this.users.getProfile(bootRestore()).pipe(
       map((user) => {
         this.session.restore(user);
       }),

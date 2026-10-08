@@ -137,8 +137,12 @@ Steps:
 health check gives up, it records `serverReachable = false` and resolves; the login page
 then shows "The server is not responding." with a "Try again" button that re-runs step 1.
 
-The simulation interceptor skips `/health`, and the request log records boot calls too, so
-the timeline shows the cold start when the lab is first opened.
+The simulation interceptor skips `/health` and the boot-time `/me` restore (it carries
+`SKIP_SIMULATION` as well as `SILENT_AUTH`), so boot always measures the real server. Before
+this (found at the Stage 4 exit), an armed profile failure was taken by the restore and the
+reload landed on the login page instead of showing the profile panel's error, and a profile
+delay held the splash. The request log records boot calls too, so the timeline shows the
+cold start when the lab is first opened.
 
 ## §17 HTTP interceptors
 
@@ -149,7 +153,7 @@ matters: the last one sits closest to the network.
 |---|---|---|
 | 1 | `apiUrlInterceptor` | Prefixes relative `api/...` URLs with `environment.apiBaseUrl` |
 | 2 | `authInterceptor` | Adds `Authorization: Bearer` when a token exists, except on `/health` and `/auth/login`. Only URLs under `apiBaseUrl` get it, so the token never reaches another origin |
-| 3 | `simulationInterceptor` | Maps the URL to an endpoint group and appends `delay` and, if armed, `fail=true` from `LatencySettingsStore`. Disarms fail-next after use |
+| 3 | `simulationInterceptor` | Maps the URL to an endpoint group and appends `delay` and, if armed, `fail=true` from `LatencySettingsStore`. Disarms fail-next after use. Leaves alone any request carrying `SKIP_SIMULATION` (the boot restore, §16) |
 | 4 | `requestLogInterceptor` | Records start, end, status, outcome and the `Server-Timing` split in `RequestLogStore`. Classifies an `ApiError` with code `CLIENT_TIMEOUT` as `timeout`, any other `ApiError` as `error`, and an unsubscribe with neither as `cancelled` |
 | 5 | `errorInterceptor` | Converts `HttpErrorResponse` to `ApiError { status, code, message, details }`. An error that is already an `ApiError` (the `CLIENT_TIMEOUT` from #6) passes through unchanged. On 401 `UNAUTHENTICATED` or `SESSION_INVALID`, clears the session and navigates to `/login?reason=expired&returnUrl=<current path>`, so signing in again returns the user to where they were, except on login and on requests carrying `SILENT_AUTH` (§16) |
 | 6 | `timeoutInterceptor` | Applies `timeout({ each: settings.timeoutMs })` (default 12 s). `each`, not `first`: HttpClient emits its sent event at once, which would satisfy `first`. Emits `ApiError` with code `CLIENT_TIMEOUT` |

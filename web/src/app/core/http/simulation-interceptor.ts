@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { endpointGroupOf, isSimulatedGroup } from '../latency/endpoint-group';
 import { LatencySettingsStore } from '../latency/latency-settings-store';
 import { API_BASE_URL, apiPathOf } from './api-base-url';
+import { SKIP_SIMULATION } from './http-context-tokens';
 
 /**
  * Appends the lab's `delay` and, when armed, a one-shot `fail=true` (§9, §19). Only the
@@ -10,6 +11,7 @@ import { API_BASE_URL, apiPathOf } from './api-base-url';
  * is never slowed.
  */
 export const simulationInterceptor: HttpInterceptorFn = (request, next) => {
+  if (request.context.get(SKIP_SIMULATION)) return next(request);
   const path = apiPathOf(request.url, inject(API_BASE_URL));
   const group = path === null ? null : endpointGroupOf(path);
   if (!isSimulatedGroup(group)) return next(request);

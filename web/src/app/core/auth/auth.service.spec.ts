@@ -4,6 +4,7 @@ import { Router, provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { RIYA, TEST_API_BASE, errorBody } from '../../testing/fixtures';
 import { provideTestHttp } from '../../testing/http-testing';
+import { LatencySettingsStore } from '../latency/latency-settings-store';
 import { STORAGE_KEYS } from '../storage/storage-keys';
 import { AuthService } from './auth.service';
 import { SessionStore } from './session-store';
@@ -80,6 +81,24 @@ describe('AuthService', () => {
     await restored;
     expect(session.isSignedIn()).toBe(true);
     expect(session.user()).toEqual(RIYA);
+  });
+
+  /** Found at the Stage 4 exit: an armed profile failure was taken by the restore. */
+  it('restore is never simulated, so lab settings meant for the profile panel wait for it', async () => {
+    sessionStorage.setItem(STORAGE_KEYS.token, 'jwt');
+    setUp();
+    const settings = TestBed.inject(LatencySettingsStore);
+    settings.setDelay('profile', 4000);
+    settings.armFailure('profile', true);
+    const restored = firstValueFrom(auth.restore());
+
+    const request = http.expectOne((req) => req.url === `${TEST_API_BASE}/me`);
+    expect(request.request.params.keys()).toEqual([]);
+    request.flush(RIYA);
+
+    await restored;
+    expect(session.isSignedIn()).toBe(true);
+    expect(settings.armedFailures().has('profile')).toBe(true);
   });
 
   it('restore with a rejected token clears it, without failing or navigating', async () => {
