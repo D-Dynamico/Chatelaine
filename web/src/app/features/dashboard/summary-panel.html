@@ -1,0 +1,48 @@
+@if (summary(); as data) {
+  <div class="strip fade-in">
+    <p class="total tabular">{{ totalText() }}</p>
+    <div class="bar" role="img" [attr.aria-label]="'By status: ' + barLabel()">
+      @for (segment of statuses(); track segment.status) {
+        @if (segment.count > 0) {
+          <span
+            class="segment"
+            [class]="'status-' + segment.status"
+            [style.flex-grow]="segment.share"
+            [title]="segment.label + ' ' + segment.count"
+          ></span>
+        }
+      }
+    </div>
+    <ul class="counts">
+      @for (segment of statuses(); track segment.status) {
+        <li>
+          <span class="swatch" [class]="'status-' + segment.status" aria-hidden="true"></span>
+          {{ segment.label }} <span class="count tabular">{{ segment.count }}</span>
+        </li>
+      }
+      <li class="critical">
+        Critical <span class="count tabular">{{ data.byPriority.CRITICAL }}</span>
+      </li>
+    </ul>
+    @if (accessSplit().length > 0) {
+      <ul class="access" aria-label="By access level">
+        @for (part of accessSplit(); track part.level) {
+          <li>
+            <app-access-chip [tone]="part.tone" [label]="part.label" />
+            <span class="count tabular">{{ part.count }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+} @else if (failure(); as failed) {
+  <app-error-state message="Couldn't load the summary." [failure]="failed" (retry)="retry.emit()" />
+} @else if (state().status === 'empty') {
+  <app-empty-state message="No requests yet." />
+} @else {
+  <div class="skeleton">
+    <app-skeleton height="1.5rem" width="9rem" />
+    <app-skeleton height="12px" />
+    <app-skeleton width="min(30rem, 100%)" />
+  </div>
+}

@@ -24,9 +24,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: ROUTE_SEGMENTS.dashboard },
       {
         path: ROUTE_SEGMENTS.dashboard,
-        loadComponent: () =>
-          import('./features/dashboard/dashboard-page').then((m) => m.DashboardPage),
-        title: 'Dashboard',
+        loadChildren: () => import('./features/dashboard/dashboard.routes'),
       },
       {
         path: ROUTE_SEGMENTS.admin,

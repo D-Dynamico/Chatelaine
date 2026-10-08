@@ -1,0 +1,32 @@
+@if (user(); as me) {
+  <div class="card fade-in">
+    <div class="heading">
+      <h2 class="name">{{ me.displayName }}</h2>
+      <app-role-badge [tone]="tone()" [label]="roleLabel()" />
+    </div>
+    <ul class="meta">
+      <li class="tabular">{{ me.userId }}</li>
+      <li>{{ me.department }}</li>
+      <li>
+        @if (me.lastLoginAt; as lastLogin) {
+          Last signed in <app-relative-time [at]="lastLogin" />
+        } @else {
+          First sign-in
+        }
+      </li>
+    </ul>
+    <p class="sentence">{{ sentence() }}</p>
+  </div>
+} @else if (failure(); as failed) {
+  <app-error-state
+    message="Couldn't load your profile."
+    [failure]="failed"
+    (retry)="retry.emit()"
+  />
+} @else {
+  <div class="skeleton">
+    <app-skeleton height="2.5rem" width="16rem" />
+    <app-skeleton width="22rem" />
+    <app-skeleton width="min(36rem, 100%)" />
+  </div>
+}

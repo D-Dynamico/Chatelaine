@@ -1,9 +1,35 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { DashboardDataService } from './dashboard-data.service';
+import { ProfilePanel } from './profile-panel';
+import { SummaryPanel } from './summary-panel';
 
-/** The access card, summary and records table arrive in Stage 4. */
+/**
+ * The container for the dashboard's panels. Each panel gets its own stream, so they fill
+ * in independently, in whatever order their requests finish (§18).
+ */
 @Component({
   selector: 'app-dashboard-page',
-  template: '<h1 class="page-title">Dashboard</h1>',
+  imports: [ProfilePanel, SummaryPanel],
+  template: `
+    <h1 class="visually-hidden">Dashboard</h1>
+    <app-profile-panel [state]="profile()" (retry)="data.retryProfile()" />
+    <app-summary-panel [state]="summary()" (retry)="data.retrySummary()" />
+  `,
+  styles: `
+    :host {
+      display: grid;
+      gap: var(--space-5);
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardPage {}
+export class DashboardPage {
+  protected readonly data = inject(DashboardDataService);
+  protected readonly profile = toSignal(this.data.profile$, {
+    initialValue: { status: 'loading' } as const,
+  });
+  protected readonly summary = toSignal(this.data.summary$, {
+    initialValue: { status: 'loading' } as const,
+  });
+}

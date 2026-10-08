@@ -63,6 +63,19 @@ export function toLoadState<T>(isEmpty: (data: T) => boolean = () => false) {
     );
 }
 
+/** The data on screen, if any: lets a template read it without narrowing the union. */
+export function dataOf<T>(state: LoadState<T>): T | null {
+  return state.status === 'loaded' ? state.data : null;
+}
+
+export function failureOf<T>(state: LoadState<T>): LoadFailure | null {
+  return state.status === 'error' ? state.error : null;
+}
+
+export function isRefreshing<T>(state: LoadState<T>): boolean {
+  return (state.status === 'loaded' || state.status === 'empty') && state.isRefreshing;
+}
+
 /**
  * Across successive requests: a new `loading` keeps what is on screen, marked as
  * refreshing, when there is something to keep. After an error there is not, because rows

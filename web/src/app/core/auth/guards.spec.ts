@@ -5,6 +5,7 @@ import { Router, type Routes, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
 import { MEERA, RIYA } from '../../testing/fixtures';
+import { WARM_UP_TIMEOUT_MS, warmLazyRoutes } from '../../testing/lazy-routes';
 import { type UserView } from '../models/user';
 import { authGuard, guestGuard } from './auth-guard';
 import { ROLE_REFUSED_MESSAGE } from './role-guard';
@@ -20,6 +21,8 @@ async function navigateAs(user: UserView | null, url: string, table: Routes = ro
 }
 
 describe('route guards', () => {
+  beforeAll(warmLazyRoutes, WARM_UP_TIMEOUT_MS);
+
   afterEach(() => {
     sessionStorage.clear();
   });

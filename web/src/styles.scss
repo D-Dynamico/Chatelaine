@@ -28,6 +28,35 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+// Structure through tone, not boxes (§21): a lighter surface, no shadow.
+.panel {
+  position: relative;
+  display: block;
+  padding: var(--space-5);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Skeleton to content is a 150ms crossfade and nothing more (§26).
+.fade-in {
+  animation: fade-in var(--crossfade) ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --crossfade: 0ms;

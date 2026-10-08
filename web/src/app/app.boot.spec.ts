@@ -7,6 +7,7 @@ import { App } from './app';
 import { appConfig } from './app.config';
 import { STORAGE_KEYS } from './core/storage/storage-keys';
 import { RIYA } from './testing/fixtures';
+import { WARM_UP_TIMEOUT_MS, warmLazyRoutes } from './testing/lazy-routes';
 
 /** Answers like the API, a little later, so a guard that runs too early sees no session. */
 class SlowFakeApi implements HttpBackend {
@@ -24,6 +25,8 @@ class SlowFakeApi implements HttpBackend {
  */
 describe('booting the app', () => {
   let app: ApplicationRef | undefined;
+
+  beforeAll(warmLazyRoutes, WARM_UP_TIMEOUT_MS);
 
   afterEach(() => {
     app?.destroy();
