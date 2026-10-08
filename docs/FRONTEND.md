@@ -54,12 +54,17 @@ hosts `features/latency-lab`'s panel (D34). `features/admin` is imported only th
 
 | Path | Guards | Loads | Notes |
 |---|---|---|---|
-| `/login` | `guestGuard` | eager | Signed-in users are sent to `/dashboard` |
+| `/login` | `guestGuard` | `loadComponent` | Signed-in users are sent to `/dashboard` |
 | `/` | | | Redirects to `/dashboard` |
-| `/dashboard` | `authGuard` (`canMatch` on the shell route) | eager inside the shell | |
+| `/dashboard` | `authGuard` (`canMatch` on the shell route) | `loadComponent`, inside the shell (itself `loadComponent`) | |
 | `/admin` | `authGuard`, `roleGuard(ADMIN)` | `loadChildren` (own chunk) | Child: `/admin/users` |
-| `**` | `authGuard` | eager inside the shell | Not-found page with a link to the dashboard. Inside the shell so a signed-in user keeps the navigation; a signed-out user is sent to sign in first |
+| `**` | `authGuard` | `loadComponent`, inside the shell | Not-found page with a link to the dashboard. Inside the shell so a signed-in user keeps the navigation; a signed-out user is sent to sign in first |
 
+- **Every page is its own chunk.** The sign-in page needs Material's form controls and the
+  shell needs its menus; a visitor sees one of them first, so neither is in the initial
+  bundle (463 kB raw, 118 kB transferred at Stage 3, inside the 500 kB budget). The router
+  uses `withEnabledBlockingInitialNavigation()`, so bootstrap waits for the first page's
+  chunk and the boot splash (§16) covers the load instead of a blank frame.
 - `authGuard` reads the session signal. No session: redirect to
   `/login?returnUrl=<path and query>`. All guards are `canMatch`, so a refused user never
   matches the routes beneath, and the full target comes from `router.currentNavigation()`.

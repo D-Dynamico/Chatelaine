@@ -39,6 +39,8 @@ export default defineConfig(
       'no-nested-ternary': 'error',
       // A decorated class with no members is normal Angular: the decorator carries the meaning.
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
+      // Angular's validators are static functions meant to be passed by reference.
+      '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
       '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
       '@angular-eslint/component-selector': [
         'error',

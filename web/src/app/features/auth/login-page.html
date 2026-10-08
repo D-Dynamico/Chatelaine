@@ -1,0 +1,76 @@
+<main class="login">
+  <section class="intro" aria-labelledby="app-name">
+    <h1 class="app-name" id="app-name">Chatelaine</h1>
+    <p class="tagline">Service requests, scoped to who you are.</p>
+    <app-demo-accounts (pick)="fillFrom($event)" />
+    <app-server-line [state]="server()" [isRetrying]="isRetrying()" (retry)="retryServer()" />
+  </section>
+
+  <section class="panel" aria-labelledby="sign-in-title">
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <h2 class="page-title" id="sign-in-title">Sign in</h2>
+
+      <mat-form-field appearance="outline">
+        <mat-label>User ID</mat-label>
+        <input matInput formControlName="userId" autocomplete="username" spellcheck="false" />
+        @if (form.controls.userId.hasError('required')) {
+          <mat-error>Enter your user ID.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          formControlName="password"
+          autocomplete="current-password"
+          [type]="isPasswordVisible() ? 'text' : 'password'"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          [attr.aria-label]="isPasswordVisible() ? 'Hide password' : 'Show password'"
+          [attr.aria-pressed]="isPasswordVisible()"
+          (click)="isPasswordVisible.set(!isPasswordVisible())"
+        >
+          <mat-icon>{{ isPasswordVisible() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (form.controls.password.hasError('required')) {
+          <mat-error>Enter your password.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="role">
+        <span class="role-label" id="role-label">Sign in as</span>
+        <mat-button-toggle-group
+          class="role-toggle"
+          formControlName="role"
+          aria-labelledby="role-label"
+          hideSingleSelectionIndicator
+        >
+          @for (option of roleOptions; track option.value) {
+            <mat-button-toggle [value]="option.value">
+              <span class="role-option">
+                <span class="role-name">{{ option.label }}</span>
+                <span class="role-hint">{{ option.hint }}</span>
+              </span>
+            </mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </div>
+
+      <div class="message" role="alert">
+        @if (errorMessage(); as message) {
+          <p class="error">{{ message }}</p>
+        } @else if (isExpired()) {
+          <p class="notice">{{ messages.sessionExpired }}</p>
+        }
+      </div>
+
+      <button mat-flat-button class="submit" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Signing in' : 'Sign in' }}
+      </button>
+    </form>
+  </section>
+</main>

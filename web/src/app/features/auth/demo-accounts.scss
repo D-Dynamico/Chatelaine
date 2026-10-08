@@ -1,0 +1,57 @@
+:host {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.heading {
+  margin: 0;
+  font: var(--type-heading);
+}
+
+.tags {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 320px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--ink-muted);
+  border-radius: var(--radius-tag);
+  background: var(--surface);
+  color: var(--ink);
+  font: var(--type-body);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--ink);
+  }
+}
+
+.user-id {
+  font-variant-numeric: tabular-nums;
+}
+
+.disabled-account {
+  border-style: dashed;
+  color: var(--ink-muted);
+}
+
+.muted-label {
+  font: var(--type-small-strong);
+}
+
+.password {
+  margin: 0;
+  color: var(--ink-muted);
+  font: var(--type-small);
+}

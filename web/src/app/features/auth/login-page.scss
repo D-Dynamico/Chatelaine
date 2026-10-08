@@ -1,0 +1,129 @@
+@use '@angular/material' as mat;
+
+.login {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+.intro {
+  display: grid;
+  align-content: center;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-6);
+  background: var(--page);
+}
+
+.app-name {
+  margin: 0;
+  font: var(--type-display);
+}
+
+.tagline {
+  margin: calc(-1 * var(--space-5)) 0 0;
+  color: var(--ink-muted);
+  font: var(--type-heading);
+  font-weight: 400;
+}
+
+.panel {
+  display: grid;
+  align-content: center;
+  padding: var(--space-8) var(--space-6);
+  background: var(--surface);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 400px;
+}
+
+.page-title {
+  margin-bottom: var(--space-4);
+}
+
+.role {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.role-label {
+  font: var(--type-small-strong);
+}
+
+.role-toggle {
+  @include mat.button-toggle-overrides(
+    (
+      shape: var(--radius-control),
+      height: auto,
+      selected-state-background-color: var(--ink),
+      selected-state-text-color: var(--surface),
+    )
+  );
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.role-option {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.role-name {
+  font-weight: 600;
+}
+
+// Inherits the toggle's text color: muted ink would fail contrast on the selected fill.
+.role-hint {
+  font: var(--type-small);
+}
+
+// Holds its height so an error appearing does not push the button down.
+.message {
+  min-height: var(--space-6);
+
+  p {
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-control);
+    font: var(--type-small);
+  }
+
+  .error {
+    background: var(--signal-tint);
+    color: var(--signal);
+  }
+
+  .notice {
+    background: var(--page);
+    color: var(--ink);
+  }
+}
+
+.submit {
+  height: 44px;
+}
+
+// Under 720px the halves stack, form first (§23).
+@media (max-width: 720px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    order: -1;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .intro {
+    padding: var(--space-6) var(--space-4);
+  }
+}
