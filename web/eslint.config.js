@@ -3,8 +3,13 @@ import angular from 'angular-eslint';
 import tseslint from 'typescript-eslint';
 
 // Folder boundaries from docs/FRONTEND.md §14, enforced here so a review does not have to.
-const outsideShared = ['**/core/**', '**/layout/**', '**/features/**'];
-const outsideCore = ['**/layout/**', '**/features/**'];
+// Relative imports only, so package paths such as @angular/core/testing never match.
+const relativeInto = (...folders) => ({
+  regex: String.raw`^(\.\.?/)+(${folders.join('|')})(/|$)`,
+  message: 'This import crosses a folder boundary (docs/FRONTEND.md §14).',
+});
+const outsideShared = relativeInto('core', 'layout', 'features');
+const outsideCore = relativeInto('layout', 'features');
 // Components ask services for data; only services and interceptors talk HTTP (CLAUDE.md).
 const httpClientImport = {
   name: '@angular/common/http',
@@ -48,15 +53,12 @@ export default defineConfig(
   {
     files: ['src/app/shared/**/*.ts'],
     rules: {
-      'no-restricted-imports': [
-        'error',
-        { paths: [httpClientImport], patterns: [{ group: outsideShared }] },
-      ],
+      'no-restricted-imports': ['error', { paths: [httpClientImport], patterns: [outsideShared] }],
     },
   },
   {
     files: ['src/app/core/**/*.ts'],
-    rules: { 'no-restricted-imports': ['error', { patterns: [{ group: outsideCore }] }] },
+    rules: { 'no-restricted-imports': ['error', { patterns: [outsideCore] }] },
   },
   {
     files: ['src/app/{features,layout}/**/*.ts'],

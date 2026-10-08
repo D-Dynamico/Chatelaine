@@ -1,0 +1,19 @@
+<button
+  class="avatar"
+  type="button"
+  [matMenuTriggerFor]="menu"
+  [attr.aria-label]="'Account: ' + user().displayName"
+>
+  {{ initials() }}
+</button>
+<mat-menu #menu="matMenu" xPosition="before">
+  <div class="who" role="presentation">
+    <p class="name">{{ user().displayName }}</p>
+    <p class="user-id tabular">{{ user().userId }}</p>
+    <app-role-badge [tone]="tone()" [label]="roleLabel()" />
+  </div>
+  <button mat-menu-item (click)="signOut.emit()">
+    <mat-icon>logout</mat-icon>
+    <span>Sign out</span>
+  </button>
+</mat-menu>

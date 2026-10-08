@@ -1,0 +1,29 @@
+<header class="top-bar">
+  <div class="bar">
+    <a class="brand" [routerLink]="paths.dashboard">Chatelaine</a>
+    <nav class="nav" aria-label="Main">
+      <a [routerLink]="paths.dashboard" routerLinkActive="active" ariaCurrentWhenActive="page">
+        Dashboard
+      </a>
+      @if (session.isAdmin()) {
+        <a [routerLink]="paths.adminUsers" routerLinkActive="active" ariaCurrentWhenActive="page">
+          Users
+        </a>
+      }
+    </nav>
+    <div class="actions">
+      <app-theme-menu [preference]="theme.preference()" (choose)="theme.choose($event)" />
+      @if (session.user(); as user) {
+        <app-account-menu [user]="user" (signOut)="signOut()" />
+      }
+    </div>
+  </div>
+  <div class="progress">
+    @if (isLoading()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Loading" />
+    }
+  </div>
+</header>
+<main class="content">
+  <router-outlet />
+</main>
