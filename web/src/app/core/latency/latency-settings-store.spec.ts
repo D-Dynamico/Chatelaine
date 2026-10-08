@@ -39,13 +39,13 @@ describe('LatencySettingsStore', () => {
     }).toThrow(RangeError);
   });
 
-  it('keeps delays, strategy and timeout for the tab, but not armed failures', () => {
+  /** Armed failures persist since Stage 4, so a reload can be failed on purpose. */
+  it('keeps every setting for the tab, armed failures included', () => {
     const first = TestBed.inject(LatencySettingsStore);
     first.setDelay('summary', 900);
     first.setStrategy('sequential');
     first.setTimeoutMs(5_000);
     first.armFailure('profile', true);
-    TestBed.tick();
 
     TestBed.resetTestingModule();
     const second = TestBed.inject(LatencySettingsStore);
@@ -53,7 +53,26 @@ describe('LatencySettingsStore', () => {
     expect(second.delays().summary).toBe(900);
     expect(second.strategy()).toBe('sequential');
     expect(second.timeoutMs()).toBe(5_000);
-    expect(second.armedFailures().size).toBe(0);
+    expect([...second.armedFailures()]).toEqual(['profile']);
+  });
+
+  it('forgets a failure once a request has taken it, across a reload too', () => {
+    const first = TestBed.inject(LatencySettingsStore);
+    first.armFailure('records', true);
+    expect(first.takeFailure('records')).toBe(true);
+
+    TestBed.resetTestingModule();
+
+    expect(TestBed.inject(LatencySettingsStore).takeFailure('records')).toBe(false);
+  });
+
+  it('keeps only known groups from a damaged armed list', () => {
+    sessionStorage.setItem(
+      STORAGE_KEYS.latency,
+      JSON.stringify({ armedFailures: ['summary', 'health', 7, 'summary'] }),
+    );
+
+    expect([...TestBed.inject(LatencySettingsStore).armedFailures()]).toEqual(['summary']);
   });
 
   it('falls back field by field when saved settings are damaged', () => {

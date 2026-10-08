@@ -97,7 +97,7 @@ two. No NgRx (D20).
 | `UserService` | root | `getProfile()` for `/me`. Named to match the brief's "User Service" |
 | `DashboardDataService` | dashboard route | `profile$`, `summary$`, `records$(query)`, the loading strategy (§19) |
 | `AdminUsersService` | admin route | List, get, create, update, delete, `isUserIdTaken()` |
-| `LatencySettingsStore` | root | Per-group delay, fail-next flags, strategy, timeout. Delays, strategy and timeout persist to `sessionStorage`; fail-next flags do not, since each is armed for one request and a reload is not that request. Also a `reloadRequested` counter signal: the lab bumps it, `DashboardDataService` reacts to it, so the two features never import each other (D34) |
+| `LatencySettingsStore` | root | Per-group delay, fail-next flags, strategy, timeout. All of it persists to `sessionStorage`, saved on every change. An armed fail-next flag stays armed, across reloads too, until a request in its group takes it (changed in Stage 4, so a reload can be failed on purpose). Also a `reloadRequested` counter signal: the lab bumps it, `DashboardDataService` reacts to it, so the two features never import each other (D34) |
 | `RequestLogStore` | root | Last 40 request entries for the timeline |
 | `ThemeService` | root | `light`, `dark` or `system`; sets `data-theme` on `<html>` |
 

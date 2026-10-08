@@ -1,4 +1,4 @@
-import { type SimulatedGroup } from './endpoint-group';
+import { SIMULATED_GROUPS, type SimulatedGroup } from './endpoint-group';
 
 /** What the latency lab controls (docs/FRONTEND.md §19). */
 
@@ -15,6 +15,8 @@ export interface LatencySettings {
   readonly delays: GroupDelays;
   readonly strategy: LoadingStrategy;
   readonly timeoutMs: number;
+  /** Groups whose next request carries `fail=true`. Kept until a request takes the flag. */
+  readonly armedFailures: readonly SimulatedGroup[];
 }
 
 export const INITIAL_DELAYS: GroupDelays = { profile: 0, summary: 0, records: 0, admin: 0 };
@@ -23,6 +25,7 @@ export const INITIAL_SETTINGS: LatencySettings = {
   delays: INITIAL_DELAYS,
   strategy: 'independent',
   timeoutMs: TIMEOUT_LIMITS.initial,
+  armedFailures: [],
 };
 
 export function isWithin(value: unknown, limits: { min: number; max: number }): value is number {
@@ -46,6 +49,7 @@ export function parseSettings(saved: unknown): LatencySettings {
   };
   const strategy = LOADING_STRATEGIES.find((known) => known === saved['strategy']);
   const timeoutMs = saved['timeoutMs'];
+  const armed: unknown[] = Array.isArray(saved['armedFailures']) ? saved['armedFailures'] : [];
   return {
     delays: {
       profile: delayOf('profile'),
@@ -55,5 +59,6 @@ export function parseSettings(saved: unknown): LatencySettings {
     },
     strategy: strategy ?? INITIAL_SETTINGS.strategy,
     timeoutMs: isWithin(timeoutMs, TIMEOUT_LIMITS) ? timeoutMs : INITIAL_SETTINGS.timeoutMs,
+    armedFailures: SIMULATED_GROUPS.filter((group) => armed.includes(group)),
   };
 }
