@@ -198,10 +198,13 @@ Every async view follows one type:
 ```ts
 type LoadState<T> =
   | { status: 'loading' }
-  | { status: 'loaded'; data: T }
-  | { status: 'empty' }
-  | { status: 'error'; error: ApiError };
+  | { status: 'loaded'; data: T; isRefreshing: boolean }
+  | { status: 'empty'; isRefreshing: boolean }
+  | { status: 'error'; error: LoadFailure };   // { status, code, message }; ApiError fits it
 ```
+
+`LoadFailure` is declared in `shared/load-state/` because `shared/` cannot import `core/`;
+`ApiError` satisfies it structurally.
 
 `toLoadState(isEmpty?)` is an RxJS operator in `shared/load-state/` that starts with
 `loading`, maps data to `loaded` or `empty`, and catches errors into `error`. Components
@@ -213,7 +216,12 @@ cancels the first attempt instead of racing it.
 
 Panels keep showing their previous data while a refresh is in flight (a thin progress bar
 on the panel edge), so paging or sorting the table does not flash a skeleton every time.
-Only the first load shows the skeleton.
+Only the first load shows the skeleton. This is a second operator, `keepDataWhileRefreshing()`,
+applied after the `switchMap`: a new `loading` becomes the previous `loaded` or `empty`
+state with `isRefreshing: true`. It is on `empty` too, so refreshing an empty result does
+not flash the skeleton either. **A refresh that fails replaces the view with the error
+state**: rows that no longer match the URL are never left on screen looking current, and
+the load after an error shows the skeleton again.
 
 ## §19 Latency lab
 

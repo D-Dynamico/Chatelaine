@@ -134,7 +134,11 @@ shown on the login page with a retry.
 
 **D22. One `LoadState<T>` type and a `toLoadState` operator for every async view.**
 Considered: per-component `isLoading`/`error` flags. One type makes the four states
-impossible to forget and identical across panels.
+impossible to forget and identical across panels. Stage 4 added `isRefreshing` to `loaded`
+and `empty` (§18), so a refresh keeps what is on screen with a progress line instead of a
+skeleton, rather than adding a second flag beside the type. A failed refresh replaces the
+view with the error state: stale rows are not kept, because they would no longer match
+the URL that asked for them.
 
 **D23. The latency lab offers three loading strategies.**
 Independent streams, `forkJoin`, and `concat`. Showing the same data loaded three ways is a
