@@ -65,8 +65,9 @@
     overflow-x: visible;
   }
 
+  // CDK creates thead and tbody itself, outside this template, so encapsulated styles
+  // cannot reach them; everything here targets the table, rows and cells this template owns.
   .records,
-  .records tbody,
   .records tr,
   .records td {
     display: block;
@@ -74,7 +75,8 @@
     height: auto;
   }
 
-  .records thead {
+  // Kept for screen readers, hidden on screen.
+  .records .header-row {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -82,7 +84,7 @@
     clip-path: inset(50%);
   }
 
-  .record-row {
+  .records .record-row {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--space-1) var(--space-3);

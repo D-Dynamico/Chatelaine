@@ -21,6 +21,9 @@ import { SummaryPanel } from './summary-panel';
   styles: `
     :host {
       display: grid;
+      // minmax(0, 1fr): a plain 1fr track grows to its widest child's minimum content,
+      // which at 360px pushed every panel off screen.
+      grid-template-columns: minmax(0, 1fr);
       gap: var(--space-5);
     }
   `,
