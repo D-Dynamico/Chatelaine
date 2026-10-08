@@ -74,7 +74,8 @@ export class DashboardDataService {
       switchMap(([query]) =>
         this.http
           .get<RecordsPage>(API_PATHS.records, { params: toParams(query) })
-          .pipe(toLoadState((page) => page.items.length === 0)),
+          // Empty means nothing matches; a page past the end still has a total (§20).
+          .pipe(toLoadState((page) => page.total === 0)),
       ),
       keepDataWhileRefreshing(),
     );

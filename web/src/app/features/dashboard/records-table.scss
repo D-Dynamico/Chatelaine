@@ -1,0 +1,59 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+  overflow-x: auto;
+
+  @include mat.table-overrides(
+    (
+      background-color: transparent,
+      header-headline-font: var(--font-family),
+      row-item-outline-color: var(--line),
+    )
+  );
+  @include mat.paginator-overrides(
+    (
+      container-background-color: transparent,
+    )
+  );
+}
+
+.records {
+  width: 100%;
+}
+
+.title {
+  min-width: 14rem;
+}
+
+.owner {
+  display: block;
+}
+
+.secondary {
+  display: block;
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+// The note row stays in the table for its row's structure, but takes no room until opened.
+.note-row:not(.open) td {
+  padding: 0;
+  border-bottom-width: 0;
+}
+
+.note {
+  display: grid;
+  gap: var(--space-1);
+  max-width: var(--reading-max);
+  padding: var(--space-2) 0 var(--space-3);
+
+  p {
+    margin: 0;
+  }
+}
+
+.note-label {
+  color: var(--brass);
+  font: var(--type-small-strong);
+}

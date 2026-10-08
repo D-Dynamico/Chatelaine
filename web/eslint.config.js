@@ -41,6 +41,8 @@ export default defineConfig(
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
       // Angular's validators are static functions meant to be passed by reference.
       '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
+      // A leading underscore marks a parameter a signature requires but the body does not use.
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
       '@angular-eslint/component-selector': [
         'error',

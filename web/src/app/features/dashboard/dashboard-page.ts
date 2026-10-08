@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DashboardDataService } from './dashboard-data.service';
 import { ProfilePanel } from './profile-panel';
+import { RecordsPanel } from './records-panel';
 import { SummaryPanel } from './summary-panel';
 
 /**
@@ -10,11 +11,12 @@ import { SummaryPanel } from './summary-panel';
  */
 @Component({
   selector: 'app-dashboard-page',
-  imports: [ProfilePanel, SummaryPanel],
+  imports: [ProfilePanel, RecordsPanel, SummaryPanel],
   template: `
     <h1 class="visually-hidden">Dashboard</h1>
     <app-profile-panel [state]="profile()" (retry)="data.retryProfile()" />
     <app-summary-panel [state]="summary()" (retry)="data.retrySummary()" />
+    <app-records-panel />
   `,
   styles: `
     :host {
