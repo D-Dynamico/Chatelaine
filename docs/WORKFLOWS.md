@@ -59,9 +59,11 @@ from its existing `node_modules`. So a dependency change is always made this way
 2. Delete `node_modules` and `package-lock.json` (`npx rimraf node_modules package-lock.json`).
 3. Run `npm install` once, and do not run it again before committing.
 
-`npm run lint` in `api/` runs `scripts/check-lockfile.js`, which fails if any locked
-package's optional dependency is missing from the lockfile, so a stripped lockfile cannot
-be committed past the gate. Use `npm ci` for every other install.
+`npm run lint` in both `api/` and `web/` runs `scripts/check-lockfile.js`, which fails if
+any locked package's optional dependency is missing from the lockfile, or resolves only to
+a copy whose version does not match (a nested package can lose its bindings while a
+hoisted copy of another version keeps bindings of the same name). A stripped lockfile
+cannot be committed past the gate. Use `npm ci` for every other install.
 
 ## §29 Accounts and deploy
 
