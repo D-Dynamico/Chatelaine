@@ -35,9 +35,13 @@ body {
 }
 
 // The static boot splash in index.html (§16). Plain CSS, because it shows before Angular.
+// Fixed over the page, so the first route can render beneath it before it is removed.
 .boot-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
   box-sizing: border-box;
-  min-height: 100vh;
+  background: var(--page);
   display: grid;
   place-content: center;
   gap: var(--space-2);

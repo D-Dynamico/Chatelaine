@@ -5,6 +5,7 @@
   --role: var(--verdigris);
 
   display: block;
+  box-sizing: border-box;
   min-height: 100vh;
   border-top: var(--keyline) solid var(--role);
 }

@@ -19,16 +19,15 @@
     />
   </head>
   <body>
-    <!-- Static splash (§16): on screen until the app initializer resolves, then replaced
-         when Angular renders into app-root. The initializer writes into #boot-status. -->
-    <app-root>
-      <main class="boot-splash">
-        <p class="boot-splash__name">Chatelaine</p>
-        <p id="boot-status" class="boot-splash__status" role="status" aria-live="polite">
-          Connecting to the server
-        </p>
-      </main>
-    </app-root>
+    <!-- Static splash (§16): covers the page until the first route has rendered, then
+         provideBootSplash() removes it. The boot sequence writes into #boot-status. -->
+    <div id="boot-splash" class="boot-splash">
+      <p class="boot-splash__name">Chatelaine</p>
+      <p id="boot-status" class="boot-splash__status" role="status" aria-live="polite">
+        Connecting to the server
+      </p>
+    </div>
+    <app-root></app-root>
     <noscript>Chatelaine needs JavaScript to run.</noscript>
   </body>
 </html>

@@ -9,8 +9,8 @@ export type ServerState =
 export const BOOT_STATUS_ELEMENT_ID = 'boot-status';
 
 /**
- * What the boot sequence knows about the server (§16). While Angular has not rendered yet,
- * the only thing on screen is the static splash, so messages are written into it directly;
+ * What the boot sequence knows about the server (§16). Until the first page renders, the
+ * only thing on screen is the static splash, so messages are written into it directly;
  * afterwards the login page reads `server` instead.
  */
 @Injectable({ providedIn: 'root' })
@@ -24,7 +24,7 @@ export class BootStatus {
     this.state.set(state);
   }
 
-  /** Updates the splash. Does nothing once Angular has replaced it. */
+  /** Updates the splash. Does nothing once it has been removed. */
   show(message: string): void {
     const element = this.document.getElementById(BOOT_STATUS_ELEMENT_ID);
     if (element) element.textContent = message;

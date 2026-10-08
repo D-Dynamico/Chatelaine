@@ -62,9 +62,12 @@ hosts `features/latency-lab`'s panel (D34). `features/admin` is imported only th
 
 - **Every page is its own chunk.** The sign-in page needs Material's form controls and the
   shell needs its menus; a visitor sees one of them first, so neither is in the initial
-  bundle (463 kB raw, 118 kB transferred at Stage 3, inside the 500 kB budget). The router
-  uses `withEnabledBlockingInitialNavigation()`, so bootstrap waits for the first page's
-  chunk and the boot splash (§16) covers the load instead of a blank frame.
+  bundle (463 kB raw, 118 kB transferred at Stage 3, inside the 500 kB budget). The boot
+  splash (§16) stays over the page until the first navigation settles, so it covers the
+  chunk load instead of a blank frame. Initial navigation is the router's default
+  (non-blocking) on purpose: `withEnabledBlockingInitialNavigation()` runs as a second app
+  initializer alongside the boot sequence, so the guards would decide before the session
+  was restored.
 - `authGuard` reads the session signal. No session: redirect to
   `/login?returnUrl=<path and query>`. All guards are `canMatch`, so a refused user never
   matches the routes beneath, and the full target comes from `router.currentNavigation()`.
@@ -109,7 +112,9 @@ Render's free instance wakes up (about a minute after 15 idle minutes).
 
 **`index.html` holds a static splash** (plain HTML and CSS, no Angular) with an element
 `#boot-status`. `BootStatus` updates that element's text through `DOCUMENT` while the
-initializer runs. Angular removes the splash when the shell renders.
+initializer runs. The splash is a fixed overlay outside `<app-root>`, and
+`provideBootSplash()` removes it when the first navigation settles (ends, errors, or is
+cancelled other than by a redirect), so it also covers the first page's lazy chunk.
 
 Steps:
 
