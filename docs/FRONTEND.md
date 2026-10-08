@@ -19,6 +19,7 @@ app/
                  api-base-url, api-error, http-context-tokens
     init/        app-initializer, boot-status
     latency/     latency-settings-store, request-log-store
+    notices/     notice-store (messages eager code posts; the shell shows them)
     routing/     app-paths (path constants), page-title-strategy
     storage/     web-storage (session and local storage that never throw), storage-keys
     models/      API types mirroring docs/API.md
@@ -74,7 +75,10 @@ hosts `features/latency-lab`'s panel (D34). `features/admin` is imported only th
   A stored token alone is not a session: `/me` must have confirmed it (§16).
 - `roleGuard` is a factory taking the allowed roles. A General User who types `/admin` is
   sent to `/dashboard` with a snackbar: "User management is for admins." The chunk is never
-  requested, because `canMatch` runs before `loadChildren` (verified in Stage 3).
+  requested, because `canMatch` runs before `loadChildren` (verified in Stage 3). The guard
+  posts the message to `NoticeStore` and the shell shows the snackbar: guards are eager,
+  and opening a snackbar from one put Material's overlay (about 150 kB) into the initial
+  bundle (Stage 4).
 - After login, the app navigates to `returnUrl` if it is a safe internal path, otherwise
   `/dashboard`.
 - Route titles are set with the router's `title` property and a `TitleStrategy` that

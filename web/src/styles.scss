@@ -37,6 +37,12 @@ body {
   background: var(--surface);
 }
 
+@media (max-width: 720px) {
+  .panel {
+    padding: var(--space-4);
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

@@ -57,3 +57,59 @@
   color: var(--brass);
   font: var(--type-small-strong);
 }
+
+// Under 720px each row becomes a stacked list item (§23): the ID and title lead, the rest
+// follow as labelled pairs. One table serves both sizes, so nothing is rendered twice.
+@media (max-width: 720px) {
+  :host {
+    overflow-x: visible;
+  }
+
+  .records,
+  .records tbody,
+  .records tr,
+  .records td {
+    display: block;
+    width: auto;
+    height: auto;
+  }
+
+  .records thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .record-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--line);
+
+    td {
+      grid-column: 1 / -1;
+      padding: 0;
+      border: 0;
+    }
+
+    td[data-label]:not(.title)::before {
+      content: attr(data-label);
+      display: inline-block;
+      min-width: 6.5rem;
+      color: var(--ink-muted);
+      font: var(--type-small);
+    }
+
+    .title {
+      min-width: 0;
+      font-weight: 600;
+    }
+  }
+
+  .note-row td {
+    padding: 0;
+  }
+}
