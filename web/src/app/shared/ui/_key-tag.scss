@@ -1,0 +1,31 @@
+// The key tag (§24): a pill with a punched hole, colored by access. Shared by the role
+// badge and the access chip, so the two always read as the same object.
+@mixin key-tag($padding-block: 2px) {
+  --tag: var(--verdigris);
+  --tag-fill: var(--verdigris-tint);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: $padding-block var(--space-3) $padding-block var(--space-2);
+  border: 1px solid var(--tag);
+  border-radius: var(--radius-tag);
+  background: var(--tag-fill);
+  color: var(--tag);
+  font: var(--type-small-strong);
+  white-space: nowrap;
+}
+
+@mixin admin-tone {
+  --tag: var(--brass);
+  --tag-fill: var(--brass-tint);
+}
+
+@mixin hole {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border: 1.5px solid var(--tag);
+  border-radius: 50%;
+  background: var(--surface);
+}

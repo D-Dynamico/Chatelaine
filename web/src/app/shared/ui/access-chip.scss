@@ -1,0 +1,21 @@
+@use 'key-tag';
+
+:host {
+  @include key-tag.key-tag(0);
+
+  gap: var(--space-1);
+}
+
+:host(.admin) {
+  @include key-tag.admin-tone;
+}
+
+.hole {
+  @include key-tag.hole;
+}
+
+.lock {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+}
