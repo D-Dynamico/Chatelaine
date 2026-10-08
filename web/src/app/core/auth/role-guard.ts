@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { type CanMatchFn, Router } from '@angular/router';
 import { type Role } from '../models/user';
+import { NoticeStore } from '../notices/notice-store';
 import { APP_PATHS } from '../routing/app-paths';
 import { signInRedirect } from './auth-guard';
 import { SessionStore } from './session-store';
@@ -20,7 +20,7 @@ export function roleGuard(...allowed: readonly Role[]): CanMatchFn {
     const user = session.user();
     if (!session.isSignedIn() || user === null) return signInRedirect(router);
     if (allowed.includes(user.role)) return true;
-    inject(MatSnackBar).open(ROLE_REFUSED_MESSAGE, undefined, { duration: 5_000 });
+    inject(NoticeStore).post(ROLE_REFUSED_MESSAGE);
     return router.createUrlTree([APP_PATHS.dashboard]);
   };
 }

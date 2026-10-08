@@ -14,6 +14,7 @@ import { SessionStore } from './session-store';
 async function navigateAs(user: UserView | null, url: string, table: Routes = routes) {
   TestBed.configureTestingModule({ providers: [provideRouter(table)] });
   if (user) TestBed.inject(SessionStore).start('jwt', user);
+  // The guard posts the refusal; the shell shows it. The snackbar is what the user sees.
   const snackBar = vi.spyOn(TestBed.inject(MatSnackBar), 'open');
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url);

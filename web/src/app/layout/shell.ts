@@ -1,10 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  untracked,
+} from '@angular/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../core/auth/auth.service';
 import { SessionStore } from '../core/auth/session-store';
 import { RequestLogStore } from '../core/latency/request-log-store';
+import { NoticeStore } from '../core/notices/notice-store';
 import { APP_PATHS } from '../core/routing/app-paths';
 import { ThemeService } from '../core/theme/theme.service';
 import { AccountMenu } from './account-menu';
@@ -43,6 +51,16 @@ export class Shell {
   protected readonly isLoading = computed(() =>
     this.requestLog.entries().some((entry) => entry.outcome === 'pending'),
   );
+
+  constructor() {
+    // Shows messages posted by eager code, such as the role guard's refusal.
+    const notices = inject(NoticeStore);
+    effect(() => {
+      if (notices.pending().length === 0) return;
+      const message = untracked(() => notices.take());
+      if (message) this.snackBar.open(message, undefined, { duration: 5_000 });
+    });
+  }
 
   protected async signOut(): Promise<void> {
     this.auth.logout();
