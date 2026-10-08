@@ -19,6 +19,11 @@ body {
   outline-offset: 2px;
 }
 
+.page-title {
+  margin: 0;
+  font: var(--type-title);
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }

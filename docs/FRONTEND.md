@@ -19,6 +19,7 @@ app/
                  api-base-url, api-error, http-context-tokens
     init/        app-initializer, boot-status
     latency/     latency-settings-store, request-log-store
+    routing/     app-paths (path constants), page-title-strategy
     storage/     web-storage (session and local storage that never throw), storage-keys
     models/      API types mirroring docs/API.md
     theme/       theme.service (light, dark, system)
@@ -55,12 +56,14 @@ hosts `features/latency-lab`'s panel (D34). `features/admin` is imported only th
 |---|---|---|---|
 | `/login` | `guestGuard` | eager | Signed-in users are sent to `/dashboard` |
 | `/` | | | Redirects to `/dashboard` |
-| `/dashboard` | `authGuard` | eager inside the shell | |
+| `/dashboard` | `authGuard` (`canMatch` on the shell route) | eager inside the shell | |
 | `/admin` | `authGuard`, `roleGuard(ADMIN)` | `loadChildren` (own chunk) | Child: `/admin/users` |
-| `**` | | eager | Not-found page with a link home |
+| `**` | `authGuard` | eager inside the shell | Not-found page with a link to the dashboard. Inside the shell so a signed-in user keeps the navigation; a signed-out user is sent to sign in first |
 
 - `authGuard` reads the session signal. No session: redirect to
-  `/login?returnUrl=<path>`.
+  `/login?returnUrl=<path and query>`. All guards are `canMatch`, so a refused user never
+  matches the routes beneath, and the full target comes from `router.currentNavigation()`.
+  A stored token alone is not a session: `/me` must have confirmed it (§16).
 - `roleGuard` is a factory taking the allowed roles. A General User who types `/admin` is
   sent to `/dashboard` with a snackbar: "User management is for admins." The chunk is never
   requested, because `canMatch` runs before `loadChildren` (verified in Stage 3).
