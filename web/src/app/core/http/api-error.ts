@@ -6,6 +6,7 @@ import {
   type ClientErrorCode,
   type ErrorDetail,
 } from '../models/api-error-body';
+import { NO_SERVER_TIMING, type ServerTiming, parseServerTiming } from './server-timing';
 
 /** Every failed request reaches services and components as this, never as an HTTP error. */
 export class ApiError extends Error {
@@ -14,6 +15,8 @@ export class ApiError extends Error {
     readonly code: ApiErrorCode | ClientErrorCode,
     message: string,
     readonly details: readonly ErrorDetail[] = [],
+    /** Kept so the request timeline can split a failed request's bar too (§19). */
+    readonly timing: ServerTiming = NO_SERVER_TIMING,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -43,14 +46,12 @@ export function toApiError(response: HttpErrorResponse): ApiError {
   if (response.status === 0) {
     return new ApiError(0, 'NETWORK_ERROR', CLIENT_ERROR_MESSAGES.NETWORK_ERROR);
   }
+  const timing = parseServerTiming(response.headers.get('Server-Timing'));
   const body: unknown = response.error;
   if (!isApiErrorBody(body)) {
-    return new ApiError(
-      response.status,
-      'UNEXPECTED_RESPONSE',
-      CLIENT_ERROR_MESSAGES.UNEXPECTED_RESPONSE,
-    );
+    const message = CLIENT_ERROR_MESSAGES.UNEXPECTED_RESPONSE;
+    return new ApiError(response.status, 'UNEXPECTED_RESPONSE', message, [], timing);
   }
   const { code, message, details } = body.error;
-  return new ApiError(response.status, code, message, details);
+  return new ApiError(response.status, code, message, details, timing);
 }

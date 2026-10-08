@@ -86,7 +86,7 @@ two. No NgRx (D20).
 | `UserService` | root | `getProfile()` for `/me`. Named to match the brief's "User Service" |
 | `DashboardDataService` | dashboard route | `profile$`, `summary$`, `records$(query)`, the loading strategy (§19) |
 | `AdminUsersService` | admin route | List, get, create, update, delete, `isUserIdTaken()` |
-| `LatencySettingsStore` | root | Per-group delay, fail-next flags, strategy, timeout, persisted to `sessionStorage`. Also a `reloadRequested` counter signal: the lab bumps it, `DashboardDataService` reacts to it, so the two features never import each other (D34) |
+| `LatencySettingsStore` | root | Per-group delay, fail-next flags, strategy, timeout. Delays, strategy and timeout persist to `sessionStorage`; fail-next flags do not, since each is armed for one request and a reload is not that request. Also a `reloadRequested` counter signal: the lab bumps it, `DashboardDataService` reacts to it, so the two features never import each other (D34) |
 | `RequestLogStore` | root | Last 40 request entries for the timeline |
 | `ThemeService` | root | `light`, `dark` or `system`; sets `data-theme` on `<html>` |
 
@@ -135,7 +135,7 @@ matters: the last one sits closest to the network.
 | 3 | `simulationInterceptor` | Maps the URL to an endpoint group and appends `delay` and, if armed, `fail=true` from `LatencySettingsStore`. Disarms fail-next after use |
 | 4 | `requestLogInterceptor` | Records start, end, status, outcome and the `Server-Timing` split in `RequestLogStore`. Classifies an `ApiError` with code `CLIENT_TIMEOUT` as `timeout`, any other `ApiError` as `error`, and an unsubscribe with neither as `cancelled` |
 | 5 | `errorInterceptor` | Converts `HttpErrorResponse` to `ApiError { status, code, message, details }`. An error that is already an `ApiError` (the `CLIENT_TIMEOUT` from #6) passes through unchanged. On 401 `UNAUTHENTICATED` or `SESSION_INVALID`, clears the session and navigates to `/login?reason=expired&returnUrl=<current path>`, so signing in again returns the user to where they were, except on login and on requests carrying `SILENT_AUTH` (§16) |
-| 6 | `timeoutInterceptor` | Applies `timeout(settings.timeoutMs)` (default 12 s). Emits `ApiError` with code `CLIENT_TIMEOUT` |
+| 6 | `timeoutInterceptor` | Applies `timeout({ each: settings.timeoutMs })` (default 12 s). `each`, not `first`: HttpClient emits its sent event at once, which would satisfy `first`. Emits `ApiError` with code `CLIENT_TIMEOUT` |
 
 **Why this order.** The request log must sit outside the timeout. If the timeout were
 outside the log, a timeout would unsubscribe from the log's stream, and the log would see a
@@ -169,6 +169,11 @@ interface RequestLogEntry {
   serverWorkMs: number | null;    // from Server-Timing "app"
 }
 ```
+
+Only requests to `apiBaseUrl` are logged. `ApiError` carries the parsed `Server-Timing`
+of a failed response, because the log sits outside the error interceptor and would
+otherwise lose the split for errors (a simulated failure after a delay still shows its
+delay segment).
 
 `cancelled` is detected with `finalize` when neither a response nor an error arrived,
 which is what happens when `switchMap` drops an in-flight request.
