@@ -1,9 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { STORAGE_KEYS } from '../storage/storage-keys';
 import { SESSION_STORAGE } from '../storage/web-storage';
-import { type SimulatedGroup } from './endpoint-group';
+import { SIMULATED_GROUPS, type SimulatedGroup } from './endpoint-group';
 import {
   DELAY_LIMITS,
+  type GroupDelays,
   type LatencySettings,
   type LoadingStrategy,
   TIMEOUT_LIMITS,
@@ -47,6 +48,16 @@ export class LatencySettingsStore {
       throw new RangeError(`Delay out of range: ${String(delayMs)}`);
     }
     this.update((current) => ({ ...current, delays: { ...current.delays, [group]: delayMs } }));
+  }
+
+  /** Every group at once, as a preset does: one change, one save. All or nothing. */
+  setDelays(delays: GroupDelays): void {
+    for (const group of SIMULATED_GROUPS) {
+      if (!isWithin(delays[group], DELAY_LIMITS)) {
+        throw new RangeError(`Delay out of range: ${String(delays[group])}`);
+      }
+    }
+    this.update((current) => ({ ...current, delays }));
   }
 
   setStrategy(strategy: LoadingStrategy): void {

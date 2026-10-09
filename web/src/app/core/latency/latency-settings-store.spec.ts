@@ -28,6 +28,26 @@ describe('LatencySettingsStore', () => {
     expect(settings.armedFailures().size).toBe(0);
   });
 
+  it('sets all the delays together, and saves them in one write', () => {
+    const settings = TestBed.inject(LatencySettingsStore);
+    const writes = vi.spyOn(Storage.prototype, 'setItem');
+
+    settings.setDelays({ profile: 300, summary: 900, records: 1_600, admin: 500 });
+
+    expect(settings.delays()).toEqual({ profile: 300, summary: 900, records: 1_600, admin: 500 });
+    expect(writes.mock.calls.filter(([key]) => key === STORAGE_KEYS.latency)).toHaveLength(1);
+    writes.mockRestore();
+  });
+
+  it('refuses a whole set of delays if any one is out of range, changing nothing', () => {
+    const settings = TestBed.inject(LatencySettingsStore);
+
+    expect(() => {
+      settings.setDelays({ profile: 300, summary: 900, records: 10_001, admin: 500 });
+    }).toThrow(RangeError);
+    expect(settings.delays()).toEqual(INITIAL_SETTINGS.delays);
+  });
+
   it('refuses values the API or the lab would reject', () => {
     const settings = TestBed.inject(LatencySettingsStore);
 

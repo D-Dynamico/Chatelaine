@@ -1,0 +1,86 @@
+:host {
+  display: grid;
+  gap: var(--space-5);
+  align-content: start;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-title);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.heading {
+  margin: 0;
+  font: var(--type-heading);
+}
+
+.hint {
+  margin: 0;
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+// The chosen preset is shown by a filled, inked button and `aria-pressed`, not by color.
+.preset[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.groups {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.group-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.group-name {
+  font-weight: 600;
+}
+
+.group-path {
+  flex: 1;
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.value {
+  font-weight: 600;
+}
+
+mat-slider {
+  width: 100%;
+  margin: 0;
+}
+
+.reload {
+  justify-self: start;
+}

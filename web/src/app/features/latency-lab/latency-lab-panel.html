@@ -1,0 +1,94 @@
+<header class="head">
+  <h2 class="title" id="lab-title">Latency lab</h2>
+  <button mat-icon-button type="button" aria-label="Close the latency lab" (click)="dismiss.emit()">
+    <mat-icon>close</mat-icon>
+  </button>
+</header>
+
+<section class="section" aria-labelledby="strategy-heading">
+  <h3 class="heading" id="strategy-heading">Loading strategy</h3>
+  <app-strategy-picker [strategy]="settings.strategy()" (choose)="settings.setStrategy($event)" />
+  <p class="hint">A new strategy applies the next time the dashboard loads.</p>
+</section>
+
+<section class="section" aria-labelledby="delay-heading">
+  <h3 class="heading" id="delay-heading">Delay per endpoint</h3>
+  <div class="presets" role="group" aria-label="Presets">
+    @for (preset of presets; track preset.id) {
+      <button
+        mat-stroked-button
+        type="button"
+        class="preset"
+        [attr.aria-pressed]="activePreset() === preset.id"
+        (click)="choosePreset(preset)"
+      >
+        {{ preset.label }}
+      </button>
+    }
+  </div>
+
+  <ul class="groups">
+    @for (item of groups; track item.group) {
+      <li class="group">
+        <div class="group-head">
+          <span class="group-name">{{ item.name }}</span>
+          <span class="group-path">{{ item.path }}</span>
+          <output class="value tabular">{{ formatMs(settings.delays()[item.group]) }}</output>
+        </div>
+        <mat-slider
+          [min]="delayLimits.min"
+          [max]="delayLimits.max"
+          [step]="delayLimits.step"
+          [displayWith]="formatMs"
+        >
+          <input
+            matSliderThumb
+            [attr.aria-label]="item.name + ' delay in milliseconds'"
+            [value]="settings.delays()[item.group]"
+            (valueChange)="setDelay(item.group, $event)"
+          />
+        </mat-slider>
+        <mat-slide-toggle
+          [checked]="settings.armedFailures().has(item.group)"
+          (change)="settings.armFailure(item.group, $event.checked)"
+        >
+          Fail the next {{ item.name.toLowerCase() }} request
+        </mat-slide-toggle>
+      </li>
+    }
+  </ul>
+</section>
+
+<section class="section" aria-labelledby="timeout-heading">
+  <h3 class="heading" id="timeout-heading">Client timeout</h3>
+  <div class="group-head">
+    <span class="group-name">Give up after</span>
+    <output class="value tabular">{{ formatSeconds(settings.timeoutMs()) }}</output>
+  </div>
+  <mat-slider
+    [min]="timeoutLimits.min"
+    [max]="timeoutLimits.max"
+    [step]="timeoutLimits.step"
+    [displayWith]="formatSeconds"
+  >
+    <input
+      matSliderThumb
+      aria-label="Client timeout in seconds"
+      [value]="settings.timeoutMs()"
+      (valueChange)="settings.setTimeoutMs($event)"
+    />
+  </mat-slider>
+  <p class="hint">A delay longer than the timeout shows the timeout state.</p>
+</section>
+
+@if (canReloadDashboard()) {
+  <button mat-flat-button type="button" class="reload" (click)="settings.requestReload()">
+    <mat-icon>refresh</mat-icon>
+    Reload dashboard
+  </button>
+}
+
+<section class="section" aria-labelledby="timeline-heading">
+  <h3 class="heading" id="timeline-heading">Timeline</h3>
+  <app-request-timeline [entries]="entries()" [now]="now()" (clear)="clearLog()" />
+</section>
