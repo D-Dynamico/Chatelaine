@@ -1,0 +1,78 @@
+<div class="title-row">
+  <h1 class="page-title">Users</h1>
+</div>
+
+<section
+  class="panel list"
+  aria-labelledby="users-heading"
+  [attr.aria-busy]="state().status === 'loading'"
+>
+  <div class="progress">
+    @if (isRefreshing()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Updating users" />
+    }
+  </div>
+
+  <div class="header">
+    <h2 class="visually-hidden" id="users-heading">All users</h2>
+    <div class="filters" role="search" aria-label="Filter users">
+      <mat-form-field appearance="outline" class="search" subscriptSizing="dynamic">
+        <mat-label>Search name, ID or email</mat-label>
+        <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+        <input matInput type="search" [formControl]="search" maxlength="60" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Role</mat-label>
+        <mat-select
+          [value]="query.values().role ?? null"
+          (valueChange)="filter({ role: $event ?? undefined })"
+        >
+          <mat-option [value]="null">All roles</mat-option>
+          @for (option of roleOptions; track option.value) {
+            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Status</mat-label>
+        <mat-select
+          [value]="query.values().status ?? null"
+          (valueChange)="filter({ status: $event ?? undefined })"
+        >
+          <mat-option [value]="null">All statuses</mat-option>
+          @for (option of statusOptions; track option.value) {
+            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  @if (page(); as rows) {
+    <app-users-table
+      class="fade-in"
+      aria-labelledby="users-heading"
+      [page]="rows"
+      [sort]="sort()"
+      [currentUserId]="currentUserId()"
+      (sortChange)="changeSort($event)"
+      (pageChange)="changePage($event)"
+    />
+  } @else if (failure(); as failed) {
+    <app-error-state [message]="messages.failed" [failure]="failed" (retry)="retry()" />
+  } @else if (state().status === 'empty') {
+    <app-empty-state
+      [message]="messages.noneMatch"
+      [actionLabel]="isFiltered() ? 'Clear filters' : null"
+      (action)="clearFilters()"
+    />
+  } @else {
+    <div class="skeleton">
+      @for (row of [1, 2, 3, 4, 5]; track row) {
+        <app-skeleton height="2.5rem" />
+      }
+    </div>
+  }
+</section>

@@ -1,0 +1,56 @@
+@use '../../shared/ui/stacked-table';
+
+:host {
+  display: block;
+  overflow-x: auto;
+
+  @include stacked-table.surface;
+}
+
+.users {
+  width: 100%;
+}
+
+.name,
+.secondary {
+  display: block;
+}
+
+.secondary {
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.you {
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tag);
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.actions {
+  width: 3rem;
+  text-align: end;
+}
+
+@include stacked-table.stacked('.users', '.header-row', '.user-row', '.user');
+
+@media (max-width: 720px) {
+  :host {
+    overflow-x: visible;
+  }
+
+  // The menu button sits at the top right of each stacked item, level with the name.
+  .users .user-row {
+    position: relative;
+  }
+
+  .users .user-row .actions {
+    position: absolute;
+    top: var(--space-2);
+    right: 0;
+    width: auto;
+  }
+}

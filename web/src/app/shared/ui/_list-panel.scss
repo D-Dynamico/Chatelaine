@@ -1,0 +1,70 @@
+@use '@angular/material' as mat;
+
+// A panel holding a filterable list (§23): a progress line on its top edge while a refresh
+// runs (§18), a header with filters that fold into a two-column grid on small screens, and
+// skeleton rows. Records and users share it, so the two lists behave and fold alike.
+@mixin list-panel {
+  display: grid;
+  gap: var(--space-4);
+
+  .progress {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    overflow: hidden;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+
+    @include mat.progress-bar-overrides(
+      (
+        active-indicator-height: 2px,
+        track-height: 2px,
+        track-color: transparent,
+      )
+    );
+  }
+
+  .header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+
+    mat-form-field {
+      width: 11rem;
+    }
+
+    .search {
+      width: 16rem;
+    }
+  }
+
+  .skeleton {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  @media (max-width: 720px) {
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+
+      mat-form-field {
+        width: auto;
+        min-width: 0;
+      }
+
+      .search {
+        grid-column: 1 / -1;
+        width: auto;
+      }
+    }
+  }
+}

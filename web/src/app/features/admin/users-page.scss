@@ -1,0 +1,20 @@
+@use '../../shared/ui/list-panel';
+
+:host {
+  display: grid;
+  // minmax(0, 1fr), as on the dashboard: a plain 1fr track grows to its widest child.
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.list {
+  @include list-panel.list-panel;
+}

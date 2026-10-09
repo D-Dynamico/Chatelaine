@@ -1,0 +1,72 @@
+@use '@angular/material' as mat;
+
+// A Material table on a panel's surface, which under 720px turns each row into a stacked
+// list item (§23): the lead cell first, the rest as pairs labelled from `data-label`. One
+// table serves both sizes, so nothing is rendered twice.
+//
+// CDK creates thead and tbody itself, outside the component's template, so encapsulated
+// styles cannot reach them; these rules target only the table, the header row, the rows and
+// the cells a template owns. `$table`, `$header-row` and `$row` are those selectors, and
+// `$lead` is the cell that leads each item unlabelled.
+@mixin surface {
+  @include mat.table-overrides(
+    (
+      background-color: transparent,
+      header-headline-font: var(--font-family),
+      row-item-outline-color: var(--line),
+    )
+  );
+  @include mat.paginator-overrides(
+    (
+      container-background-color: transparent,
+    )
+  );
+}
+
+@mixin stacked($table, $header-row, $row, $lead) {
+  @media (max-width: 720px) {
+    #{$table},
+    #{$table} tr,
+    #{$table} td {
+      display: block;
+      width: auto;
+      height: auto;
+    }
+
+    // Kept for screen readers, hidden on screen.
+    #{$table} #{$header-row} {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    #{$table} #{$row} {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-1) var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--line);
+
+      td {
+        grid-column: 1 / -1;
+        padding: 0;
+        border: 0;
+      }
+
+      td[data-label]:not(#{$lead})::before {
+        content: attr(data-label);
+        display: inline-block;
+        min-width: 6.5rem;
+        color: var(--ink-muted);
+        font: var(--type-small);
+      }
+
+      #{$lead} {
+        min-width: 0;
+        font-weight: 600;
+      }
+    }
+  }
+}
