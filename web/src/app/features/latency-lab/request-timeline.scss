@@ -1,0 +1,184 @@
+:host {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--space-3) 0;
+  color: var(--ink-muted);
+}
+
+.axis {
+  position: relative;
+  height: 1.25rem;
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.tick {
+  position: absolute;
+  transform: translateX(-50%);
+
+  // The first and last labels stay inside the panel instead of hanging over its edge.
+  &:first-child {
+    transform: none;
+  }
+
+  &:last-child {
+    transform: translateX(-100%);
+  }
+}
+
+.rows {
+  display: grid;
+  gap: var(--space-1);
+  max-height: 22rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-control);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--page);
+  }
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font: var(--type-small);
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outcome {
+  flex: none;
+  font-weight: 600;
+}
+
+.track {
+  position: relative;
+  height: 0.75rem;
+}
+
+// Every bar has an ink outline, so it reads against the panel whatever its fill is.
+.bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  min-width: 3px;
+  box-sizing: border-box;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.seg {
+  min-width: 0;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.delay,
+.swatch.delay {
+  background: repeating-linear-gradient(135deg, var(--ink) 0 1.5px, transparent 1.5px 4px);
+}
+
+.work,
+.swatch.work {
+  background: var(--ink);
+}
+
+.network,
+.swatch.network {
+  background: color-mix(in srgb, var(--ink) 40%, var(--surface));
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.6rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+}
+
+// Outcome, by treatment as well as by the word on the row (§21).
+.error .bar {
+  border: 2px solid var(--signal);
+}
+
+.error .seg {
+  background: transparent;
+}
+
+.error .outcome {
+  color: var(--signal);
+}
+
+.cancelled .bar {
+  opacity: 0.6;
+  background: linear-gradient(var(--ink), var(--ink)) center / 100% 2px no-repeat;
+}
+
+.timeout .bar {
+  border-right: 3px dashed var(--signal);
+}
+
+.pending .bar {
+  border-style: dashed;
+}
+
+// The full description appears for the focused or hovered row; it is also each row's
+// accessible name, so it is hidden from assistive technology here to avoid saying it twice.
+.detail {
+  display: none;
+  margin: 0;
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.row:hover .detail,
+.row:focus-visible .detail {
+  display: block;
+}

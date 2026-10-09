@@ -1,0 +1,50 @@
+<div class="toolbar">
+  <ul class="legend" aria-label="Bar segments">
+    <li><span class="swatch delay" aria-hidden="true"></span>Simulated delay</li>
+    <li><span class="swatch work" aria-hidden="true"></span>Server work</li>
+    <li><span class="swatch network" aria-hidden="true"></span>Network and browser</li>
+  </ul>
+  <button mat-button type="button" (click)="clear.emit()" [disabled]="timeline().rows.length === 0">
+    Clear
+  </button>
+</div>
+
+@if (timeline().rows.length === 0) {
+  <p class="empty">{{ emptyMessage }}</p>
+} @else {
+  <div class="axis" aria-hidden="true">
+    @for (tick of timeline().ticks; track tick.pct) {
+      <span class="tick tabular" [style.left.%]="tick.pct">{{ tick.label }}</span>
+    }
+  </div>
+
+  <ol
+    #list
+    class="rows"
+    aria-label="Requests, oldest first. Use the arrow keys to move between them."
+  >
+    @for (row of timeline().rows; track row.id; let index = $index) {
+      <li
+        #rowItem
+        [class]="'row ' + row.outcome"
+        [tabindex]="index === activeIndex() ? 0 : -1"
+        [attr.aria-label]="row.description"
+        (focus)="onFocus(index)"
+        (keydown)="onKeydown($event)"
+      >
+        <div class="meta">
+          <span class="label">{{ row.label }}</span>
+          <span class="outcome tabular">{{ row.outcomeText }}</span>
+        </div>
+        <div class="track">
+          <div class="bar" [style.left.%]="row.startPct" [style.width.%]="row.widthPct">
+            <span class="seg delay" [style.flex-basis.%]="row.delayShare"></span>
+            <span class="seg work" [style.flex-basis.%]="row.workShare"></span>
+            <span class="seg network" [style.flex-basis.%]="row.networkShare"></span>
+          </div>
+        </div>
+        <p class="detail tabular" aria-hidden="true">{{ row.description }}</p>
+      </li>
+    }
+  </ol>
+}
