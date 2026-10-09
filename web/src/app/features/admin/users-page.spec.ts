@@ -1,12 +1,18 @@
 import { HttpTestingController, type TestRequest } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MATERIAL_ANIMATIONS } from '@angular/material/core';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { SessionStore } from '../../core/auth/session-store';
 import { MEERA, RIYA, TEST_API_BASE, errorBody } from '../../testing/fixtures';
 import { provideTestHttp } from '../../testing/http-testing';
 import { AdminUsersService } from './admin-users.service';
-import { USERS_MESSAGES, USER_SEARCH_DEBOUNCE_MS, UsersPage } from './users-page';
+import {
+  USERS_MESSAGES,
+  USER_CONFIRMATIONS,
+  USER_SEARCH_DEBOUNCE_MS,
+  UsersPage,
+} from './users-page';
 
 const USERS = `${TEST_API_BASE}/admin/users`;
 const pageOf = (total: number, page = 1, items: unknown[] = total > 0 ? [MEERA, RIYA] : []) => ({
@@ -20,8 +26,12 @@ async function openPage(url = '/admin/users') {
   TestBed.configureTestingModule({
     providers: [
       ...provideTestHttp(),
-      provideRouter([{ path: 'admin/users', component: UsersPage }]),
-      AdminUsersService,
+      // On the route, as in admin.routes.ts, so a dialog that cannot see it fails here too.
+      provideRouter([
+        { path: 'admin/users', component: UsersPage, providers: [AdminUsersService] },
+      ]),
+      // jsdom fires no animation events, so a dialog would never finish closing.
+      { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
     ],
   });
   TestBed.inject(SessionStore).start('jwt', MEERA);
@@ -125,5 +135,64 @@ describe('UsersPage', () => {
 
     expect(page.router.url).toBe('/admin/users?page=2');
     expect(page.nextRequest().request.params.get('page')).toBe('2');
+  });
+
+  describe('dialogs', () => {
+    afterEach(() => {
+      document.querySelectorAll('.cdk-overlay-container').forEach((overlay) => {
+        overlay.replaceChildren();
+      });
+    });
+
+    const inOverlay = () => document.querySelector('.cdk-overlay-container');
+    const overlayButton = (name: string): HTMLButtonElement => {
+      const button = [...(inOverlay()?.querySelectorAll('button') ?? [])].find((candidate) =>
+        candidate.textContent.includes(name),
+      );
+      if (!button) throw new Error(`No "${name}" button in the overlay`);
+      return button;
+    };
+
+    it('opens the create dialog with the route-provided service', async () => {
+      const page = await openPage();
+      page.nextRequest().flush(pageOf(2));
+      await page.settle();
+
+      page.buttonNamed('Create user').click();
+      await page.settle();
+
+      expect(inOverlay()?.querySelector('h2')?.textContent).toContain('Create user');
+    });
+
+    it('reloads the table in place and confirms once an edit is saved', async () => {
+      const page = await openPage();
+      page.nextRequest().flush(pageOf(2));
+      await page.settle();
+      page
+        .host()
+        .querySelector<HTMLButtonElement>('[aria-label="Actions for Riya Sharma"]')
+        ?.click();
+      await page.settle();
+      overlayButton('Edit user').click();
+      await page.settle();
+
+      const department = inOverlay()?.querySelector<HTMLInputElement>(
+        'input[formcontrolname="department"]',
+      );
+      if (!department) throw new Error('No department field');
+      department.value = 'Accounts';
+      department.dispatchEvent(new Event('input'));
+      await page.settle();
+      overlayButton('Save changes').click();
+      page.http.expectOne(`${USERS}/riya`).flush({ ...RIYA, department: 'Accounts' });
+      await page.settle();
+
+      const reload = page.nextRequest();
+      expect(page.host().textContent).toContain('Riya Sharma');
+      expect(page.host().querySelector('mat-progress-bar')).not.toBeNull();
+      reload.flush(pageOf(2));
+      await page.settle();
+      expect(inOverlay()?.textContent).toContain(USER_CONFIRMATIONS.saved);
+    });
   });
 });

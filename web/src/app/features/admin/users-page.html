@@ -1,5 +1,9 @@
 <div class="title-row">
   <h1 class="page-title">Users</h1>
+  <button mat-flat-button type="button" (click)="openCreate()">
+    <mat-icon>person_add</mat-icon>
+    Create user
+  </button>
 </div>
 
 <section
@@ -59,6 +63,7 @@
       [currentUserId]="currentUserId()"
       (sortChange)="changeSort($event)"
       (pageChange)="changePage($event)"
+      (edit)="openEdit($event)"
     />
   } @else if (failure(); as failed) {
     <app-error-state [message]="messages.failed" [failure]="failed" (retry)="retry()" />

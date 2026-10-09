@@ -1,0 +1,100 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <mat-dialog-content class="content">
+    <div class="progress">
+      @if (isSaving()) {
+        <mat-progress-bar mode="indeterminate" aria-label="Saving" />
+      }
+    </div>
+
+    @if (failure(); as message) {
+      <p class="failure" role="alert">{{ message }}</p>
+    }
+
+    @if (editing; as edit) {
+      <p class="user-id">
+        <span class="label">User ID</span>
+        <span class="tabular">{{ edit.user.userId }}</span>
+      </p>
+    } @else {
+      <mat-form-field appearance="outline">
+        <mat-label>User ID</mat-label>
+        <input
+          matInput
+          formControlName="userId"
+          autocomplete="off"
+          spellcheck="false"
+          [errorStateMatcher]="whileTyping"
+        />
+        <mat-hint aria-live="polite">{{ userIdHint() }}</mat-hint>
+        <mat-error aria-live="polite">{{ errors().userId }}</mat-error>
+      </mat-form-field>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Display name</mat-label>
+      <input matInput formControlName="displayName" autocomplete="off" />
+      <mat-error>{{ errors().displayName }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="off" />
+      <mat-error>{{ errors().email }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Department</mat-label>
+      <input matInput formControlName="department" autocomplete="off" />
+      <mat-error>{{ errors().department }}</mat-error>
+    </mat-form-field>
+
+    <div class="choice">
+      <span class="label" id="role-label">Role</span>
+      <mat-button-toggle-group formControlName="role" aria-labelledby="role-label">
+        @for (role of roles; track role.value) {
+          <mat-button-toggle [value]="role.value">{{ role.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+      @if (editing?.isSelf) {
+        <p class="note">{{ reasons.role }}</p>
+      }
+    </div>
+
+    @if (editing; as edit) {
+      <div class="choice">
+        <span class="label" id="status-label">Status</span>
+        <mat-button-toggle-group formControlName="status" aria-labelledby="status-label">
+          @for (status of statuses; track status.value) {
+            <mat-button-toggle [value]="status.value">{{ status.label }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+        @if (edit.isSelf) {
+          <p class="note">{{ reasons.status }}</p>
+        }
+      </div>
+
+      <mat-slide-toggle
+        [checked]="isSettingPassword()"
+        (change)="setPasswordToggle($event.checked)"
+      >
+        Set a new password
+      </mat-slide-toggle>
+    }
+
+    @if (!editing || isSettingPassword()) {
+      <mat-form-field appearance="outline">
+        <mat-label>{{ editing ? 'New password' : 'Password' }}</mat-label>
+        <input matInput type="password" formControlName="password" autocomplete="new-password" />
+        <mat-hint>{{ passwordHint }}</mat-hint>
+        <mat-error>{{ errors().password }}</mat-error>
+      </mat-form-field>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="isSaving()">Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="!canSubmit()">{{ submitLabel }}</button>
+  </mat-dialog-actions>
+</form>
