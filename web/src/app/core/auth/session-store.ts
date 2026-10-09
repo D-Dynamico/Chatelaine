@@ -29,6 +29,16 @@ export class SessionStore {
     this.currentUser.set(user);
   }
 
+  /**
+   * Takes a newer copy of the signed-in user, such as the answer to an admin editing their
+   * own row, so the shell never shows a name the server has replaced. Any other user, or
+   * none signed in, is ignored: this can refresh the session, never switch it.
+   */
+  refreshUser(user: UserView): void {
+    if (this.currentUser()?.userId !== user.userId) return;
+    this.currentUser.set(user);
+  }
+
   clear(): void {
     this.tokens.clear();
     this.currentToken.set(null);

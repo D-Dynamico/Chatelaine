@@ -12,3 +12,8 @@ export const API_PATHS = {
   summary: `${API_PREFIX}/records/summary`,
   adminUsers: `${API_PREFIX}/admin/users`,
 } as const;
+
+/** One user under the admin API. The userId is user input, so it is encoded. */
+export function adminUserPath(userId: string): string {
+  return `${API_PATHS.adminUsers}/${encodeURIComponent(userId)}`;
+}

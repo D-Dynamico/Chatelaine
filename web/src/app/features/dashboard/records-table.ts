@@ -10,8 +10,8 @@ import {
   RECORD_SORT_FIELDS,
   type RecordItem,
   type RecordSortField,
-  type SortOrder,
 } from '../../core/models/service-request';
+import { type SortOrder } from '../../core/models/paging';
 import { AccessChip } from '../../shared/ui/access-chip';
 import { PriorityMark } from '../../shared/ui/priority-mark';
 import { RelativeTime } from '../../shared/ui/relative-time';

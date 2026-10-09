@@ -38,4 +38,24 @@ describe('SessionStore', () => {
     expect(session.user()).toBeNull();
     expect(session.isSignedIn()).toBe(false);
   });
+
+  it("takes a newer copy of the signed-in user's own profile", () => {
+    const session = TestBed.inject(SessionStore);
+    session.start('jwt', MEERA);
+
+    session.refreshUser({ ...MEERA, displayName: 'Meera N.' });
+
+    expect(session.user()?.displayName).toBe('Meera N.');
+  });
+
+  it("never takes another user's profile, nor one while signed out", () => {
+    const session = TestBed.inject(SessionStore);
+
+    session.refreshUser(RIYA);
+    expect(session.user()).toBeNull();
+
+    session.start('jwt', MEERA);
+    session.refreshUser({ ...RIYA, role: 'ADMIN' });
+    expect(session.user()).toEqual(MEERA);
+  });
 });

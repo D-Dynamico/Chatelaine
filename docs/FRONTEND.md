@@ -95,12 +95,12 @@ two. No NgRx (D20).
 
 | Service | Scope | Holds |
 |---|---|---|
-| `SessionStore` | root | `token`, `user`, computed `isAdmin`, `isSignedIn`. The only writer of session state |
+| `SessionStore` | root | `token`, `user`, computed `isAdmin`, `isSignedIn`. The only writer of session state. `refreshUser()` takes a newer copy of the signed-in user (an admin's saved edit of their own row, as the server returned it) and ignores any other userId, so it can refresh the session but never switch it |
 | `TokenStorage` | root | Read, write, clear the token in `sessionStorage` (D9). Wrapped in try/catch |
 | `AuthService` | root | `login()`, `logout()`, `restore()`. Talks to `/auth/*` and `/me`, writes to `SessionStore` |
 | `UserService` | root | `getProfile()` for `/me`. Named to match the brief's "User Service" |
 | `DashboardDataService` | dashboard route | `profile$`, `summary$`, `records$(query)`, the loading strategy (§19) |
-| `AdminUsersService` | admin route | List, get, create, update, delete, `isUserIdTaken()` |
+| `AdminUsersService` | admin route | `users$(query)` with `reload()`, `user()`, `isUserIdTaken()`, `create()`, `update()`, `remove()`. A successful `update()` hands the returned user to `SessionStore.refreshUser()` |
 | `LatencySettingsStore` | root | Per-group delay, fail-next flags, strategy, timeout. All of it persists to `sessionStorage`, saved on every change. An armed fail-next flag stays armed, across reloads too, until a request in its group takes it (changed in Stage 4, so a reload can be failed on purpose). Also a `reloadRequested` counter signal: the lab bumps it, `DashboardDataService` reacts to it, so the two features never import each other (D34) |
 | `RequestLogStore` | root | Last 40 request entries for the timeline |
 | `ThemeService` | root | `light`, `dark` or `system`; sets `data-theme` on `<html>` |

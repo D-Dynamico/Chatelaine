@@ -1,5 +1,7 @@
 /** Mirrors docs/API.md §11 and docs/ARCHITECTURE.md §5. */
 
+import { type SortOrder } from './paging';
+
 export const CATEGORIES = ['HARDWARE', 'SOFTWARE', 'ACCESS', 'NETWORK', 'FACILITIES'] as const;
 export type Category = (typeof CATEGORIES)[number];
 
@@ -20,9 +22,6 @@ export const RECORD_SORT_FIELDS = [
   'title',
 ] as const;
 export type RecordSortField = (typeof RECORD_SORT_FIELDS)[number];
-
-export const SORT_ORDERS = ['asc', 'desc'] as const;
-export type SortOrder = (typeof SORT_ORDERS)[number];
 
 /** Codes never appear on screen (§25); these are the words that do. */
 export const CATEGORY_LABELS: Readonly<Record<Category, string>> = {
@@ -70,13 +69,6 @@ export interface AdminRecordItem extends RecordItem {
   readonly ownerName: string;
   readonly assignee: string | null;
   readonly internalNote: string | null;
-}
-
-export interface Page<T> {
-  readonly items: readonly T[];
-  readonly page: number;
-  readonly pageSize: number;
-  readonly total: number;
 }
 
 export interface RecordQuery {

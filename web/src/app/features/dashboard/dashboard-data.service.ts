@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import {
   type Observable,
@@ -9,10 +9,11 @@ import {
   switchMap,
 } from 'rxjs';
 import { UserService } from '../../core/auth/user.service';
+import { isSameQuery, toHttpParams } from '../../core/http/list-query';
 import { API_PATHS } from '../../core/http/api-paths';
+import { type Page } from '../../core/models/paging';
 import {
   type AdminRecordItem,
-  type Page,
   type RecordItem,
   type RecordQuery,
   type RecordSummary,
@@ -25,15 +26,6 @@ import {
 } from '../../shared/load-state/load-state';
 
 export type RecordsPage = Page<RecordItem | AdminRecordItem>;
-
-function sameQuery(a: RecordQuery, b: RecordQuery): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function toParams(query: RecordQuery): HttpParams {
-  const entries = Object.entries(query).filter(([, value]) => value !== undefined);
-  return new HttpParams({ fromObject: Object.fromEntries(entries) });
-}
 
 /**
  * The dashboard's three data streams (§15). Provided on the dashboard route, so it lives
@@ -68,12 +60,12 @@ export class DashboardDataService {
   /** Reloads whenever the query changes; paging and sorting keep the rows on screen. */
   records$(query$: Observable<RecordQuery>): Observable<LoadState<RecordsPage>> {
     return combineLatest([
-      query$.pipe(distinctUntilChanged(sameQuery)),
+      query$.pipe(distinctUntilChanged(isSameQuery)),
       this.recordsRetries.pipe(startWith(undefined)),
     ]).pipe(
       switchMap(([query]) =>
         this.http
-          .get<RecordsPage>(API_PATHS.records, { params: toParams(query) })
+          .get<RecordsPage>(API_PATHS.records, { params: toHttpParams(query) })
           // Empty means nothing matches; a page past the end still has a total (§20).
           .pipe(toLoadState((page) => page.total === 0)),
       ),

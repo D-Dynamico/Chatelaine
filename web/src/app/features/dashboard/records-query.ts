@@ -4,8 +4,8 @@ import {
   RECORD_SORT_FIELDS,
   REQUEST_STATUSES,
   type RecordQuery,
-  SORT_ORDERS,
 } from '../../core/models/service-request';
+import { SORT_ORDERS } from '../../core/models/paging';
 import {
   type QueryValues,
   choice,
