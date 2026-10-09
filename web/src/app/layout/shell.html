@@ -12,6 +12,22 @@
       }
     </nav>
     <div class="actions">
+      <button
+        #timelineButton
+        mat-button
+        type="button"
+        class="timeline-button"
+        aria-controls="latency-lab"
+        [attr.aria-expanded]="isLabOpen()"
+        [attr.aria-label]="timelineLabel()"
+        (click)="toggleLab()"
+      >
+        <mat-icon aria-hidden="true">timeline</mat-icon>
+        <span class="timeline-text">Timeline</span>
+        @if (pendingCount() > 0) {
+          <span class="count tabular" aria-hidden="true">{{ pendingCount() }}</span>
+        }
+      </button>
       <app-theme-menu [preference]="theme.preference()" (choose)="theme.choose($event)" />
       @if (session.user(); as user) {
         <app-account-menu [user]="user" (signOut)="signOut()" />
@@ -27,3 +43,21 @@
 <main class="content">
   <router-outlet />
 </main>
+
+@if (isLabOpen()) {
+  <!-- Not modal: the point is to watch the page load while the timeline draws. -->
+  <aside
+    #drawer
+    id="latency-lab"
+    class="lab"
+    tabindex="-1"
+    aria-label="Latency lab"
+    (keydown.escape)="closeLab()"
+  >
+    @defer (on immediate) {
+      <app-latency-lab-panel [canReloadDashboard]="isOnDashboard()" (dismiss)="closeLab()" />
+    } @placeholder {
+      <p class="lab-loading">Loading the latency lab.</p>
+    }
+  </aside>
+}

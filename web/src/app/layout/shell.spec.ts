@@ -82,4 +82,121 @@ describe('Shell', () => {
     expect(TestBed.inject(SessionStore).isSignedIn()).toBe(false);
     expect(navigate).toHaveBeenCalledWith('/login');
   });
+
+  describe('latency lab drawer', () => {
+    const timelineButton = (host: HTMLElement) =>
+      host.querySelector<HTMLButtonElement>('button[aria-controls="latency-lab"]');
+    const drawer = () => document.querySelector<HTMLElement>('aside#latency-lab');
+    const panelRendered = () =>
+      vi.waitFor(() => {
+        expect(drawer()?.querySelector('app-latency-lab-panel')).not.toBeNull();
+      });
+    const open = async (fixture: { whenStable: () => Promise<unknown> }, host: HTMLElement) => {
+      timelineButton(host)?.click();
+      await fixture.whenStable();
+      await panelRendered();
+    };
+
+    it('is closed until the Timeline button is pressed, for both roles', async () => {
+      for (const user of [RIYA, MEERA]) {
+        TestBed.resetTestingModule();
+        const { host } = await renderShellFor(user);
+
+        expect(timelineButton(host)).not.toBeNull();
+        expect(timelineButton(host)?.getAttribute('aria-expanded')).toBe('false');
+        expect(drawer()).toBeNull();
+      }
+    });
+
+    it('opens on the button, and says so', async () => {
+      const { fixture, host } = await renderShellFor(RIYA);
+
+      await open(fixture, host);
+
+      expect(timelineButton(host)?.getAttribute('aria-expanded')).toBe('true');
+      expect(drawer()?.getAttribute('aria-label')).toBe('Latency lab');
+      expect(host.classList).toContain('lab-open');
+    });
+
+    it('moves focus into the drawer when it opens', async () => {
+      const { fixture, host } = await renderShellFor(RIYA);
+
+      await open(fixture, host);
+
+      expect(document.activeElement).toBe(drawer());
+    });
+
+    it('closes on the button again', async () => {
+      const { fixture, host } = await renderShellFor(RIYA);
+      await open(fixture, host);
+
+      timelineButton(host)?.click();
+      await fixture.whenStable();
+
+      expect(drawer()).toBeNull();
+      expect(timelineButton(host)?.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('closes on Escape from inside it, and gives focus back to the button', async () => {
+      const { fixture, host } = await renderShellFor(RIYA);
+      await open(fixture, host);
+
+      drawer()?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await fixture.whenStable();
+
+      expect(drawer()).toBeNull();
+      expect(document.activeElement).toBe(timelineButton(host));
+    });
+
+    it('closes from the close button inside the panel, and gives focus back', async () => {
+      const { fixture, host } = await renderShellFor(RIYA);
+      await open(fixture, host);
+
+      drawer()
+        ?.querySelector<HTMLButtonElement>('button[aria-label="Close the latency lab"]')
+        ?.click();
+      await fixture.whenStable();
+
+      expect(drawer()).toBeNull();
+      expect(document.activeElement).toBe(timelineButton(host));
+    });
+
+    it('counts the requests in flight on the button, and says so to screen readers', async () => {
+      const { fixture, host } = await renderShellFor(RIYA);
+      const log = TestBed.inject(RequestLogStore);
+      expect(host.querySelector('.count')).toBeNull();
+      expect(timelineButton(host)?.getAttribute('aria-label')).toBe('Timeline');
+
+      const first = log.start({ group: 'records', method: 'GET', url: '/records' });
+      log.start({ group: 'summary', method: 'GET', url: '/records/summary' });
+      await fixture.whenStable();
+
+      expect(host.querySelector('.count')?.textContent.trim()).toBe('2');
+      expect(timelineButton(host)?.getAttribute('aria-label')).toBe(
+        'Timeline, 2 requests in flight',
+      );
+
+      log.finish(first, { outcome: 'ok', status: 200 });
+      await fixture.whenStable();
+      expect(host.querySelector('.count')?.textContent.trim()).toBe('1');
+      expect(timelineButton(host)?.getAttribute('aria-label')).toBe(
+        'Timeline, 1 request in flight',
+      );
+    });
+
+    it('offers "Reload dashboard" on the dashboard and nowhere else', async () => {
+      const { fixture, host } = await renderShellFor(RIYA);
+      const router = TestBed.inject(Router);
+      await open(fixture, host);
+      const reloadOffered = () => drawer()?.textContent.includes('Reload dashboard');
+
+      await router.navigateByUrl('/dashboard?status=OPEN');
+      await fixture.whenStable();
+      expect(reloadOffered()).toBe(true);
+
+      await router.navigateByUrl('/admin/users');
+      await fixture.whenStable();
+      expect(reloadOffered()).toBe(false);
+    });
+  });
 });

@@ -3,6 +3,7 @@
 // The role keyline (§21): a user always knows which hat they are wearing.
 :host {
   --role: var(--verdigris);
+  --lab-width: 28rem;
 
   display: block;
   box-sizing: border-box;
@@ -82,4 +83,69 @@
   max-width: var(--content-max);
   margin: 0 auto;
   padding: var(--space-6) var(--space-4);
+}
+
+.timeline-button {
+  gap: var(--space-1);
+}
+
+// How many requests are in flight, as a number in a small ink pill (never color alone).
+.count {
+  min-width: 1.25rem;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-tag);
+  background: var(--ink);
+  color: var(--surface);
+  font: var(--type-small-strong);
+  text-align: center;
+}
+
+// The latency lab (§19): a drawer on the right, a bottom sheet on small screens. It is not
+// modal, so the page stays visible and usable while the timeline draws. Where there is room
+// the page makes way for it instead of sitting underneath.
+.lab {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: min(var(--lab-width), 100vw);
+  padding: var(--space-4) var(--space-5);
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 18%, transparent);
+
+  &:focus-visible {
+    outline-offset: -3px;
+  }
+}
+
+.lab-loading {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+@media (min-width: 1000px) {
+  :host(.lab-open) {
+    padding-right: var(--lab-width);
+  }
+}
+
+@media (max-width: 720px) {
+  .timeline-text {
+    display: none;
+  }
+
+  .lab {
+    top: auto;
+    left: 0;
+    width: auto;
+    max-height: 75vh;
+    padding: var(--space-4);
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  }
 }
