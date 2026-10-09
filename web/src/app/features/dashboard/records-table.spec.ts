@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { type AdminRecordItem } from '../../core/models/service-request';
-import { type RecordsPage } from './dashboard-data.service';
+import { type RecordsPage } from './dashboard-strategies';
 import { ADMIN_COLUMNS, GENERAL_COLUMNS, RecordsTable, type TableSort } from './records-table';
 
 const ITEM: AdminRecordItem = {

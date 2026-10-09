@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -71,9 +71,7 @@ export class RecordsPanel {
   protected readonly search = new FormControl(this.query.values().q ?? '', { nonNullable: true });
 
   private readonly recordQuery = computed(() => toRecordQuery(this.query.values(), this.isAdmin()));
-  protected readonly state = toSignal(this.data.records$(toObservable(this.recordQuery)), {
-    initialValue: { status: 'loading' } as const,
-  });
+  protected readonly state = this.data.records;
 
   protected readonly page = computed(() => dataOf(this.state()));
   protected readonly failure = computed(() => failureOf(this.state()));
@@ -104,6 +102,11 @@ export class RecordsPanel {
       .subscribe((text) => {
         this.query.update({ q: text === '' ? undefined : text }, { isTyping: true });
       });
+
+    // The service loads the table for whatever the URL asks for, and again when it changes.
+    effect(() => {
+      this.data.setRecordsQuery(this.recordQuery());
+    });
 
     // The box follows the URL when q changes from outside it (Back, or Clear filters).
     effect(() => {

@@ -99,7 +99,7 @@ two. No NgRx (D20).
 | `TokenStorage` | root | Read, write, clear the token in `sessionStorage` (D9). Wrapped in try/catch |
 | `AuthService` | root | `login()`, `logout()`, `restore()`. Talks to `/auth/*` and `/me`, writes to `SessionStore` |
 | `UserService` | root | `getProfile()` for `/me`. Named to match the brief's "User Service" |
-| `DashboardDataService` | dashboard route | `profile$`, `summary$`, `records$(query)`, the loading strategy (§19) |
+| `DashboardDataService` | dashboard route | `profile`, `summary` and `records` signals of `LoadState`, `setRecordsQuery()` and the per-panel retries. A *load* (the three requests for the table's query) runs the lab's strategy (§19) when the page opens and on every `reloadRequested`, and a reload cancels the one before it. Later query changes reload only the table |
 | `AdminUsersService` | admin route | `users$(query)` with `reload()`, `user()`, `isUserIdTaken()`, `create()`, `update()`, `remove()`. A successful `update()` hands the returned user to `SessionStore.refreshUser()` |
 | `LatencySettingsStore` | root | Per-group delay, fail-next flags, strategy, timeout. All of it persists to `sessionStorage`, saved on every change. An armed fail-next flag stays armed, across reloads too, until a request in its group takes it (changed in Stage 4, so a reload can be failed on purpose). Also a `reloadRequested` counter signal: the lab bumps it, `DashboardDataService` reacts to it, so the two features never import each other (D34) |
 | `RequestLogStore` | root | Last 40 request entries for the timeline |

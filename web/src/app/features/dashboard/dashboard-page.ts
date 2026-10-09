@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { DashboardDataService } from './dashboard-data.service';
 import { ProfilePanel } from './profile-panel';
 import { RecordsPanel } from './records-panel';
 import { SummaryPanel } from './summary-panel';
 
 /**
- * The container for the dashboard's panels. Each panel gets its own stream, so they fill
- * in independently, in whatever order their requests finish (§18).
+ * The container for the dashboard's panels. Each panel gets its own state, and the lab's
+ * loading strategy decides whether they fill in independently, together or in turn (§19).
  */
 @Component({
   selector: 'app-dashboard-page',
@@ -31,10 +30,6 @@ import { SummaryPanel } from './summary-panel';
 })
 export class DashboardPage {
   protected readonly data = inject(DashboardDataService);
-  protected readonly profile = toSignal(this.data.profile$, {
-    initialValue: { status: 'loading' } as const,
-  });
-  protected readonly summary = toSignal(this.data.summary$, {
-    initialValue: { status: 'loading' } as const,
-  });
+  protected readonly profile = this.data.profile;
+  protected readonly summary = this.data.summary;
 }

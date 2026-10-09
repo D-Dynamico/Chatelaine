@@ -16,7 +16,7 @@ import { AccessChip } from '../../shared/ui/access-chip';
 import { PriorityMark } from '../../shared/ui/priority-mark';
 import { RelativeTime } from '../../shared/ui/relative-time';
 import { StatusChip } from '../../shared/ui/status-chip';
-import { type RecordsPage } from './dashboard-data.service';
+import { type RecordsPage } from './dashboard-strategies';
 import { accessDisplay, priorityDisplay, statusDisplay } from './record-display';
 import { RecordRowTyping } from './record-row-typing';
 
