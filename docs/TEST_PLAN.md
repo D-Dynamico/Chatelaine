@@ -165,7 +165,9 @@ Run against the deployed app at Stage 7, and use it for the demo recording.
 3. Sign in as `riya` with role Admin: refused with the same message.
 4. Sign in as `riya`, General User. Point out the verdigris keyline, the access card
    sentence, and the table without owner, assignee or note columns.
-5. Open the timeline (top bar). Choose "Staggered" and press "Reload dashboard": the panels
+5. Open the timeline (top bar) and press "Clear" (the axis starts at the first request in
+   view, so a long session squeezes new bars to a sliver). Choose "Staggered" and press
+   "Reload dashboard": the panels
    finish in reverse order and the timeline shows why. Switch to "All at once" and reload:
    nothing appears until the slowest finishes. Switch to "One after another" and reload:
    the three bars form a staircase. Press "Reload dashboard" twice quickly: the first

@@ -164,8 +164,8 @@ that test is not protecting anything. Details: `docs/TEST_PLAN.md`.
 
 ## Status
 
-Stages 0 to 5 (docs, API foundation, data and admin API, web foundation, dashboard, admin)
-are done and pushed; Stage 6 (latency lab) is next. See `docs/sessions/2026-10-09-stage5.md`.
+Stages 0 to 6 (docs, API foundation, data and admin API, web foundation, dashboard, admin,
+latency lab) are done and pushed; Stage 7 (ship) is next. See `docs/sessions/2026-10-10-stage6.md`.
 Stages and exit criteria: `docs/WORKFLOWS.md` §31.
 Open questions are tracked in the newest session note, not here.
 
