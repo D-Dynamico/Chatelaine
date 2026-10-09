@@ -1,5 +1,8 @@
 :host {
   display: grid;
+  // minmax(0, 1fr) on every grid here: a plain 1fr track grows to its widest child, such as a
+  // long request path, and pushes the drawer's content past its edge on a phone.
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
   align-content: start;
 }
@@ -17,6 +20,7 @@
 
 .section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
 }
 
@@ -76,9 +80,12 @@
   font-weight: 600;
 }
 
+// A slider's thumb sticks out half its width past each end of the track, which Material
+// allows for with a margin on each side; without it the thumbs overflow the drawer.
 mat-slider {
-  width: 100%;
-  margin: 0;
+  box-sizing: border-box;
+  width: calc(100% - 2 * var(--space-2));
+  margin: 0 var(--space-2);
 }
 
 .reload {

@@ -1,5 +1,6 @@
 :host {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 
@@ -57,6 +58,9 @@
 
 .rows {
   display: grid;
+  // minmax(0, 1fr): a plain 1fr track grows to the widest row's unbroken path, which at 360px
+  // pushed every row past the edge of the drawer.
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-1);
   max-height: 22rem;
   margin: 0;
@@ -67,6 +71,8 @@
 
 .row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 2px;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-control);
@@ -79,6 +85,7 @@
 
 .meta {
   display: flex;
+  min-width: 0;
   justify-content: space-between;
   gap: var(--space-3);
   font: var(--type-small);
