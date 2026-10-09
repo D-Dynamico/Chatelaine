@@ -120,15 +120,19 @@ writes, no temp file left behind, a corrupt file refused).
 | `requestLogInterceptor` | Records ok, error, cancelled (unsubscribe before response) and timeout (through the full registered chain, so it fails if the order in §17 regresses); parses `Server-Timing` |
 | App initializer | Resolves when health fails; clears a rejected token without navigating; never throws |
 | `toLoadState` | Emits loading then loaded; empty when the predicate says so; error on failure |
-| `DashboardDataService` | Independent, all-at-once and sequential strategies issue requests in the expected order (inspect `HttpTestingController` between flushes) |
+| `DashboardDataService` | Independent sends all three at once and each panel resolves alone; all-at-once resolves nothing until the last flush and fails all three on one failure; sequential sends each request only after the one before finished, even after a failure; a reload cancels the requests in flight (and a second cancels the first); a strategy change alone sends nothing; a records page change reloads only the table under every strategy; a load's records never overwrite a page the table asked for after it (inspect `HttpTestingController` between flushes) |
 | Login page | Required fields; role selector; demo tag fills the form; server error message shown; submit disabled while pending |
 | Records table | General User columns vs Admin columns; masked fields never rendered |
 | User form dialog | userId availability: one request 400 ms after typing stops, a pending one cancelled; 404 reads available, 200 taken, 503 and a client timeout read "couldn't check" without blocking submit; create vs edit modes (edit sends only what changed); own role and status locked; 409 `USER_EXISTS` marks the userId "Already taken", 409 `SELF_ACTION` shown in the dialog |
+| Timeline geometry and component | Bar math as plain numbers (axis origin and floor, round ticks, three-way split with server time clamped, pending growth, fixed length with the clock off); every outcome said in words; rows are one tab stop and move with the arrows, Home and End without swallowing Tab |
+| Animation clock | Ticks only while something is pending; never starts a loop on an idle page; reads `null` under reduced motion and follows the preference when it changes |
+| Latency lab panel | A preset sets the sliders and looks chosen; moving a slider un-chooses it; each slider and the timeout write through the store; a fail-next toggle arms its own group and turns itself off when a request takes the flag; "Reload dashboard" bumps the counter once per press and is absent off the dashboard; Clear empties the log |
+| Shell drawer | Closed until the Timeline button is pressed; opens with focus inside; Escape and the close button close it and return focus to the button; the button's name counts requests in flight; "Reload dashboard" follows the route |
 | Users table and page | URL query parsed defensively; own row shows "You" and offers no Delete or Disable, even if clicked; Disable asks first and sends nothing on cancel; Enable asks nothing; Delete fetches the record count first, "Disable instead" sends a PATCH and never a DELETE; a refusal is said in the API's words |
 
 ## §37 Guard checks
 
-A test that cannot fail protects nothing. At the exit of Stages 2, 5 and 7, each guard
+A test that cannot fail protects nothing. At the exit of Stages 2, 5, 6 and 7, each guard
 below is removed by hand (or by a temporary patch), the suite is run, and the named test
 must go red. Results are recorded in the session note.
 
@@ -145,6 +149,12 @@ must go red. Results are recorded in the session note.
 | Delay clamp | `delay=10001` is 400 |
 | `roleGuard` on `/admin` | `roleGuard` blocks a General User |
 | Masked columns in the records table | General User columns test |
+| `concat` in the one-after-another strategy | Sequential sends the second request only after the first finishes |
+| `forkJoin` in the all-at-once strategy | All-at-once resolves nothing until the last call finishes |
+| `switchMap` on the dashboard load | A reload cancels the requests still in flight |
+| The stale-records guard in `DashboardDataService` | The first load's records never overwrite a later page |
+| The reduced-motion check in the animation clock | The clock reads `null` under reduced motion |
+| Own tab-stop logic in the timeline | Rows are one tab stop |
 
 ## §38 Manual demo script
 
@@ -155,9 +165,12 @@ Run against the deployed app at Stage 7, and use it for the demo recording.
 3. Sign in as `riya` with role Admin: refused with the same message.
 4. Sign in as `riya`, General User. Point out the verdigris keyline, the access card
    sentence, and the table without owner, assignee or note columns.
-5. Open the timeline. Choose "Staggered", reload: panels finish in reverse order. Switch to
-   "All at once", reload: nothing appears until the slowest finishes. Switch to "One after
-   another".
+5. Open the timeline (top bar). Choose "Staggered" and press "Reload dashboard": the panels
+   finish in reverse order and the timeline shows why. Switch to "All at once" and reload:
+   nothing appears until the slowest finishes. Switch to "One after another" and reload:
+   the three bars form a staircase. Press "Reload dashboard" twice quickly: the first
+   attempt's bars are struck through as cancelled. Set a 10 s delay with a 5 s timeout:
+   the timeout state appears. The strategy changes only on the next reload, by design.
 6. Arm "Fail next" on records and reload: only the table shows the error state; "Try
    again" recovers.
 7. Type `/admin/users` in the address bar: redirected with a message, and the network tab

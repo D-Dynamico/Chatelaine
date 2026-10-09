@@ -236,27 +236,45 @@ the load after an error shows the skeleton again.
 A drawer on the right of the shell (a bottom sheet under 720px), opened from the top bar.
 It turns the brief's delay requirement into something an evaluator can try.
 
+**The drawer (D35).** It is not modal: there is no backdrop, the page stays usable, and on
+screens 1000px and wider the shell makes room for it instead of sitting under it, because
+the point is to watch the dashboard load while the timeline draws. It exists only while
+open and its panel is a deferred block, so the sliders and the timeline arrive as their
+own chunk the first time it is opened. It takes focus when it opens; Escape or its close
+button closes it and returns focus to the "Timeline" button, whose accessible name carries
+the number of requests in flight.
+
 **Controls**
 
 - **Delay per endpoint group:** a slider from 0 to 10000 ms for `profile`, `summary`,
   `records`, `admin`. Values show in ms with tabular figures.
 - **Presets:** "Instant" (all 0), "Realistic" (profile 300, summary 900, records 1600,
-  admin 500), "Slow network" (2500 to 4000), "Staggered" (profile 3000, summary 1500,
-  records 500, so panels finish in reverse order). Presets set the sliders; they are not
-  separate state.
+  admin 500), "Slow network" (profile 2500, summary 3200, records 4000, admin 3000),
+  "Staggered" (profile 3000, summary 1500, records 500, admin 500, so the panels finish in
+  reverse order). Presets set the sliders, all four in one change; they are not separate
+  state. The preset that looks chosen is whichever the sliders currently equal, so moving
+  a slider un-chooses it.
 - **Fail the next request:** a toggle per group. The next call in that group carries
   `fail=true`, then the toggle turns itself off.
 - **Loading strategy** for the dashboard:
   - **Independent** (default): three streams, each panel renders as soon as its own data
     arrives.
   - **All at once:** `forkJoin`. Nothing renders until the slowest call finishes, and one
-    failure fails all three.
-  - **One after another:** `concat`. Profile, then summary, then records.
+    failure fails all three (the calls still running are cancelled, which the timeline
+    shows). "Try again" on any panel reloads all three, because they are one unit.
+  - **One after another:** `concat`. Profile, then summary, then records, each sent only
+    after the one before has finished. A failed step does not stop the rest, and "Try
+    again" reloads only the panel that failed.
+
+  A strategy applies at the next load, not at once: "Reload dashboard" is how you see it.
+  It describes how the *page* loads: paging, sorting or filtering the records table later
+  reloads only the table, under every strategy.
 - **Client timeout:** 12 s by default, adjustable from 2 to 20 s, so a 10 s delay with a
   5 s timeout shows the timeout path.
 - **"Reload dashboard":** bumps `LatencySettingsStore.reloadRequested` (§15), which
-  re-triggers the dashboard streams through `switchMap`. Pressing it twice quickly shows
-  cancelled bars.
+  starts a new dashboard load through `switchMap`, cancelling the one before it. Pressing
+  it twice quickly shows cancelled bars. It is offered only while the dashboard is the
+  page open, because nothing listens to it anywhere else.
 
 **Request timeline** (the drawer's main view)
 
@@ -268,7 +286,14 @@ It turns the brief's delay requirement into something an evaluator can try.
 - Outcome is shown by bar treatment and a text label, never color alone: solid for ok,
   outlined with a status code for error, struck through for cancelled, dashed end for
   timeout.
-- Rows are focusable; focus or hover shows method, path, status and the three durations.
+- Rows are one tab stop and move with the arrow keys, Home and End (a log of forty rows
+  does not cost forty tab presses); focus or hover shows method, path, status and the
+  three durations, which are also each row's accessible name.
+- The axis starts at the first request in view, is never shorter than 1 s (so a 20 ms
+  request is still a visible bar) and ends on a round tick. Reported server time is
+  clamped to the time the request took.
+- Under `prefers-reduced-motion` nothing grows: a pending bar is drawn at a fixed length
+  labelled "Pending" and snaps to its true length when the request ends.
 
 **Why it exists:** the three strategies make the trade-off concrete. Independent loading
 gives the fastest first paint; all-at-once is simpler but as slow as its slowest call and

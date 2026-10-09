@@ -223,3 +223,18 @@ that composes features. The lab's "Reload dashboard" reaches the dashboard throu
 `reloadRequested` signal in `LatencySettingsStore` (core), so neither feature imports the
 other. Considered: moving the lab into `core/` (it is a feature with its own UI, not a
 singleton), and a shared event bus service (more machinery than one signal).
+
+**D35. The latency lab is a non-modal, lazily loaded drawer, and strategies apply at the
+next load.**
+The lab exists to watch the dashboard load while the timeline draws, so the drawer has no
+backdrop, leaves the page usable, and where there is room makes the page move over for it.
+It takes focus when it opens and gives it back to its button when it closes, but does not
+trap it. Its panel is a deferred block inside the open check, so its sliders and timeline
+are their own chunk, fetched the first time it is opened. Choosing a strategy does not
+reload by itself: "Reload dashboard" does, which keeps cause and effect visible and avoids
+a reload while a slider is being dragged. A strategy describes how the page loads, so
+paging or sorting the table afterwards reloads only the table. Under "All at once" the
+three panels are one unit and "Try again" reloads all three. Considered: `MatSidenav`
+(modal, or pushing the content) and `MatBottomSheet` (always modal), both of which hide
+or block the thing being demonstrated; applying a strategy change immediately (a surprise
+reload mid-demo).
