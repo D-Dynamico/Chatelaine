@@ -310,4 +310,22 @@ The README's async section points evaluators here.
 - The confirm dialog fetches `GET /admin/users/:userId` first and states the impact:
   "Delete Arjun Rao? Their 7 service requests will be deleted too. This can't be undone."
 - The primary action reads "Delete user". "Disable instead" is offered as a secondary
-  action, because disabling is reversible.
+  action, because disabling is reversible. The admin has just seen the consequences, so
+  it sends the change without a second dialog, and is left out for a user who is already
+  disabled. Both are pessimistic (D24): a refusal such as `LAST_ADMIN` stays in the dialog
+  in the API's own words.
+
+**Disable and enable**
+
+- Disable asks first, naming the effect: "Disable Riya Sharma? They'll lose access on their
+  next action. You can enable them again later." That is true because the API reloads the
+  user on every request (§8). Enable only gives access back, so it asks nothing.
+- Neither has a dialog to hold a refusal, so a refusal is said in a snackbar, in the API's
+  own words, and nothing changes on screen.
+
+**Availability check that cannot run**
+
+- Only a 404 means a userId is free. A 401, 403, 5xx or client timeout means the check could
+  not run: the validator returns null (not an error), the field says "Couldn't check
+  availability", and submit stays open. The server's 409 `USER_EXISTS` remains the guard,
+  and sets the field to "Already taken".

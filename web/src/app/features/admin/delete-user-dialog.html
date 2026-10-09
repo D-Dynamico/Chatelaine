@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Delete {{ user.displayName }}?</h2>
+
+<mat-dialog-content class="content">
+  <div class="progress">
+    @if (isSaving()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Saving" />
+    }
+  </div>
+
+  @if (failure(); as message) {
+    <p class="failure" role="alert">{{ message }}</p>
+  }
+
+  @if (impact(); as sentence) {
+    <p class="impact">{{ sentence }} This can't be undone.</p>
+  } @else if (loadFailure(); as failed) {
+    <app-error-state [message]="messages.failedToLoad" [failure]="failed" (retry)="retry()" />
+  } @else {
+    <div class="skeleton" aria-busy="true">
+      <app-skeleton height="1rem" />
+      <app-skeleton height="1rem" width="60%" />
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close [disabled]="isSaving()">Cancel</button>
+  @if (canDisableInstead) {
+    <button mat-stroked-button type="button" [disabled]="isSaving()" (click)="disableInstead()">
+      Disable instead
+    </button>
+  }
+  <button
+    mat-flat-button
+    type="button"
+    class="danger"
+    [disabled]="isSaving() || !loaded()"
+    (click)="remove()"
+  >
+    Delete user
+  </button>
+</mat-dialog-actions>

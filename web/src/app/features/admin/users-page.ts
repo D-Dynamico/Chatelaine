@@ -29,12 +29,15 @@ import {
 } from '../../core/models/user';
 import { injectUrlQuery } from '../../core/routing/url-query';
 import { dataOf, failureOf, isRefreshing } from '../../shared/load-state/load-state';
+import { ConfirmDialog, type ConfirmDialogData } from '../../shared/ui/confirm-dialog';
 import { EmptyState } from '../../shared/ui/empty-state';
+import { ApiError } from '../../core/http/api-error';
 import { ErrorState } from '../../shared/ui/error-state';
 import { RangeLabelIntl } from '../../shared/ui/range-label-intl';
 import { Skeleton } from '../../shared/ui/skeleton';
 import { AdminUsersService } from './admin-users.service';
 import { type UserFormData } from './user-form';
+import { DeleteUserDialog, type DeleteOutcome } from './delete-user-dialog';
 import { UserFormDialog } from './user-form-dialog';
 import {
   DEFAULT_USER_SORT,
@@ -56,9 +59,15 @@ export const USERS_MESSAGES = {
 export const USER_CONFIRMATIONS = {
   created: 'User created',
   saved: 'Changes saved',
+  disabled: 'User disabled',
+  enabled: 'User enabled',
+  deleted: 'User deleted',
 } as const;
 
+const UNEXPECTED_FAILURE = "The change wasn't saved. Try again.";
+
 const CONFIRMATION_MS = 4_000;
+const REFUSAL_MS = 8_000;
 /** Wide enough for the form, never wider than a 360px screen allows. */
 const DIALOG_SIZE = { width: '32rem', maxWidth: 'calc(100vw - 2rem)' } as const;
 
@@ -196,6 +205,60 @@ export class UsersPage {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((saved) => {
         if (saved) this.confirm(confirmation);
+      });
+  }
+
+  protected openDisable(user: UserView): void {
+    const data: ConfirmDialogData = {
+      title: `Disable ${user.displayName}?`,
+      message: "They'll lose access on their next action. You can enable them again later.",
+      confirmLabel: 'Disable user',
+    };
+    this.dialog
+      .open<ConfirmDialog, ConfirmDialogData, boolean>(ConfirmDialog, { ...DIALOG_SIZE, data })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isConfirmed) => {
+        if (isConfirmed) this.setStatus(user, 'DISABLED', USER_CONFIRMATIONS.disabled);
+      });
+  }
+
+  /** Enabling only gives access back, so it asks nothing. */
+  protected enableUser(user: UserView): void {
+    this.setStatus(user, 'ACTIVE', USER_CONFIRMATIONS.enabled);
+  }
+
+  protected openDelete(user: UserView): void {
+    this.dialog
+      .open<DeleteUserDialog, UserView, DeleteOutcome>(DeleteUserDialog, {
+        ...DIALOG_SIZE,
+        data: user,
+        injector: this.injector,
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((outcome) => {
+        if (outcome === 'deleted') this.confirm(USER_CONFIRMATIONS.deleted);
+        if (outcome === 'disabled') this.confirm(USER_CONFIRMATIONS.disabled);
+      });
+  }
+
+  /**
+   * A refusal (such as `LAST_ADMIN`) has no dialog to show it in, so it is said in a
+   * snackbar in the API's own words. Nothing changes on screen until the server agrees.
+   */
+  private setStatus(user: UserView, status: UserView['status'], confirmation: string): void {
+    this.admin
+      .update(user.userId, { status })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.confirm(confirmation);
+        },
+        error: (error: unknown) => {
+          const message = error instanceof ApiError ? error.message : UNEXPECTED_FAILURE;
+          this.snackBar.open(message, undefined, { duration: REFUSAL_MS });
+        },
       });
   }
 

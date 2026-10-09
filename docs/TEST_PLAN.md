@@ -123,7 +123,8 @@ writes, no temp file left behind, a corrupt file refused).
 | `DashboardDataService` | Independent, all-at-once and sequential strategies issue requests in the expected order (inspect `HttpTestingController` between flushes) |
 | Login page | Required fields; role selector; demo tag fills the form; server error message shown; submit disabled while pending |
 | Records table | General User columns vs Admin columns; masked fields never rendered |
-| User form dialog | userId availability: debounced, shows taken and available; create vs edit modes; server 409 shown in the dialog |
+| User form dialog | userId availability: one request 400 ms after typing stops, a pending one cancelled; 404 reads available, 200 taken, 503 and a client timeout read "couldn't check" without blocking submit; create vs edit modes (edit sends only what changed); own role and status locked; 409 `USER_EXISTS` marks the userId "Already taken", 409 `SELF_ACTION` shown in the dialog |
+| Users table and page | URL query parsed defensively; own row shows "You" and offers no Delete or Disable, even if clicked; Disable asks first and sends nothing on cancel; Enable asks nothing; Delete fetches the record count first, "Disable instead" sends a PATCH and never a DELETE; a refusal is said in the API's words |
 
 ## §37 Guard checks
 
@@ -166,5 +167,8 @@ Run against the deployed app at Stage 7, and use it for the demo recording.
 9. Users: search, filter by role, create `neha` (show the availability check), edit her
    department, disable her, delete her.
 10. Try to disable your own account: the controls explain why they are unavailable.
+    With "Fail next" armed on the admin group, the userId availability check can take the
+    failure before the table does, so arm it after the dialog is closed, or expect the field
+    to say "Couldn't check availability".
 11. Refresh on `/admin/users?role=GENERAL`: session and filters survive.
 12. Toggle dark mode; resize to phone width.

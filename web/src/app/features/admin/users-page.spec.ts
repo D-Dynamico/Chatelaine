@@ -194,5 +194,103 @@ describe('UsersPage', () => {
       await page.settle();
       expect(inOverlay()?.textContent).toContain(USER_CONFIRMATIONS.saved);
     });
+
+    const chooseFromMenu = async (
+      page: Awaited<ReturnType<typeof openPage>>,
+      row: string,
+      item: string,
+    ) => {
+      page.host().querySelector<HTMLButtonElement>(`[aria-label="Actions for ${row}"]`)?.click();
+      await page.settle();
+      overlayButton(item).click();
+      await page.settle();
+    };
+    const withRows = async (items?: unknown[]) => {
+      const page = await openPage();
+      page.nextRequest().flush(items ? pageOf(items.length, 1, items) : pageOf(2));
+      await page.settle();
+      return page;
+    };
+
+    it('disables a user only after the admin confirms, and says what it means', async () => {
+      const page = await withRows();
+
+      await chooseFromMenu(page, 'Riya Sharma', 'Disable user');
+      page.http.expectNone(`${USERS}/riya`);
+      expect(inOverlay()?.textContent).toContain('Disable Riya Sharma?');
+      expect(inOverlay()?.textContent).toContain("They'll lose access on their next action.");
+      overlayButton('Disable user').click();
+      await page.settle();
+
+      const request = page.http.expectOne(`${USERS}/riya`);
+      expect(request.request.method).toBe('PATCH');
+      expect(request.request.body).toEqual({ status: 'DISABLED' });
+      request.flush({ ...RIYA, status: 'DISABLED' });
+      await page.settle();
+      page.nextRequest().flush(pageOf(2));
+      await page.settle();
+      expect(inOverlay()?.textContent).toContain(USER_CONFIRMATIONS.disabled);
+    });
+
+    it('sends nothing when the disable question is cancelled', async () => {
+      const page = await withRows();
+
+      await chooseFromMenu(page, 'Riya Sharma', 'Disable user');
+      overlayButton('Cancel').click();
+      await page.settle();
+
+      page.http.expectNone(`${USERS}/riya`);
+    });
+
+    it('enables a disabled user at once, without asking', async () => {
+      const page = await withRows([{ ...RIYA, status: 'DISABLED' }]);
+
+      await chooseFromMenu(page, 'Riya Sharma', 'Enable user');
+
+      const request = page.http.expectOne(`${USERS}/riya`);
+      expect(request.request.body).toEqual({ status: 'ACTIVE' });
+      request.flush(RIYA);
+      await page.settle();
+      page.nextRequest().flush(pageOf(1, 1, [RIYA]));
+      await page.settle();
+      expect(inOverlay()?.textContent).toContain(USER_CONFIRMATIONS.enabled);
+    });
+
+    it('says why in a snackbar when the server refuses a disable, and changes nothing', async () => {
+      const page = await withRows();
+
+      await chooseFromMenu(page, 'Riya Sharma', 'Disable user');
+      overlayButton('Disable user').click();
+      await page.settle();
+      page.http
+        .expectOne(`${USERS}/riya`)
+        .flush(errorBody('LAST_ADMIN', 'At least one active admin must remain.'), {
+          status: 409,
+          statusText: 'Conflict',
+        });
+      await page.settle();
+
+      expect(inOverlay()?.textContent).toContain('At least one active admin must remain.');
+      page.http.expectNone((req) => req.url === USERS);
+    });
+
+    it('deletes after showing the count, then reloads the table and confirms', async () => {
+      const page = await withRows();
+
+      await chooseFromMenu(page, 'Riya Sharma', 'Delete user');
+      page.http.expectOne(`${USERS}/riya`).flush({ ...RIYA, recordCount: 7 });
+      await page.settle();
+      expect(inOverlay()?.textContent).toContain('Their 7 service requests will be deleted too.');
+      overlayButton('Delete user').click();
+      await page.settle();
+      const request = page.http.expectOne(`${USERS}/riya`);
+      expect(request.request.method).toBe('DELETE');
+      request.flush(null, { status: 204, statusText: 'No Content' });
+      await page.settle();
+
+      page.nextRequest().flush(pageOf(1, 1, [MEERA]));
+      await page.settle();
+      expect(inOverlay()?.textContent).toContain(USER_CONFIRMATIONS.deleted);
+    });
   });
 });

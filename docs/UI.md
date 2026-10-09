@@ -290,6 +290,7 @@ errors as direction, not apology.
 | Create a user | "Create user" | "User created" |
 | Edit a user | "Save changes" | "Changes saved" |
 | Disable a user | "Disable user" | "User disabled" |
+| Enable a user | "Enable user" | "User enabled" |
 | Delete a user | "Delete user" | "User deleted" |
 | Retry a load | "Try again" | the panel reloads |
 

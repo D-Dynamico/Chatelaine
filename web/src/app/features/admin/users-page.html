@@ -64,6 +64,9 @@
       (sortChange)="changeSort($event)"
       (pageChange)="changePage($event)"
       (edit)="openEdit($event)"
+      (disable)="openDisable($event)"
+      (enable)="enableUser($event)"
+      (remove)="openDelete($event)"
     />
   } @else if (failure(); as failed) {
     <app-error-state [message]="messages.failed" [failure]="failed" (retry)="retry()" />

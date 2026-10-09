@@ -5,6 +5,7 @@ import { Router, type Routes, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
 import { MEERA, RIYA } from '../../testing/fixtures';
+import { provideTestHttp } from '../../testing/http-testing';
 import { WARM_UP_TIMEOUT_MS, warmLazyRoutes } from '../../testing/lazy-routes';
 import { type UserView } from '../models/user';
 import { authGuard, guestGuard } from './auth-guard';
@@ -12,7 +13,9 @@ import { ROLE_REFUSED_MESSAGE } from './role-guard';
 import { SessionStore } from './session-store';
 
 async function navigateAs(user: UserView | null, url: string, table: Routes = routes) {
-  TestBed.configureTestingModule({ providers: [provideRouter(table)] });
+  // The pages these routes open request their data. No interceptors, so nothing starts the
+  // client timeout: an unanswered request stays pending and cannot fail a later test.
+  TestBed.configureTestingModule({ providers: [provideRouter(table), ...provideTestHttp([])] });
   if (user) TestBed.inject(SessionStore).start('jwt', user);
   // The guard posts the refusal; the shell shows it. The snackbar is what the user sees.
   const snackBar = vi.spyOn(TestBed.inject(MatSnackBar), 'open');

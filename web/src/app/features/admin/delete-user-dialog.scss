@@ -1,0 +1,42 @@
+@use '@angular/material' as mat;
+
+.content {
+  position: relative;
+}
+
+.progress {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+}
+
+.impact,
+.failure {
+  margin: 0;
+}
+
+.failure {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--signal-tint);
+  color: var(--signal);
+  font-weight: 600;
+}
+
+.skeleton {
+  display: grid;
+  gap: var(--space-2);
+}
+
+// Deleting is the one destructive action, so it is the one red button (signal, never brass
+// or verdigris, which carry meaning for access). The label takes the surface color, which
+// stays readable on the signal color in both themes.
+.danger {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--signal),
+      filled-label-text-color: var(--surface),
+    )
+  );
+}
