@@ -23,10 +23,13 @@ both in the same commit.
   travels in a header, not a cookie (D9).
 - **Security headers:** `helmet` defaults. `POST /auth/login` is rate limited (§10).
 - **Client IP:** the rate limit keys on `req.ip`. `TRUST_PROXY` sets Express's
-  `trust proxy` hop count: `1` on Render (one proxy in front), unset locally. Without it,
-  every client behind Render's proxy would share one limit, and `express-rate-limit`
-  raises `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR`. The hop count is confirmed on Render at
-  Stage 7 (§31).
+  `trust proxy` hop count: `3` on Render, unset locally. Render's free web services sit behind
+  Cloudflare, then Render's front proxy, then a local proxy, so the visitor is the third
+  address back from the socket. Measured on the live service at Stage 7: the header read
+  `<client>, <Cloudflare edge>, <Render internal>` and `req.ip` was the Render internal
+  address with `1`, which would have put every visitor in one rate-limit bucket. With the
+  count right, an address a client invents in its own `X-Forwarded-For` is ignored. Without
+  the setting at all `express-rate-limit` raises `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR`.
 
 ## §9 Simulation parameters
 

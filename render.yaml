@@ -33,8 +33,10 @@ services:
       # The deployed web app's origin, with no trailing slash, pasted into the dashboard.
       - key: CORS_ORIGIN
         sync: false
-      # One proxy (Render's) sits in front of the app; the login rate limit keys on req.ip.
+      # Three hops sit in front of the app (Cloudflare, then Render's front proxy, then its
+      # local proxy), measured on the live service at Stage 7. The login rate limit keys on
+      # req.ip, which with 1 was Render's internal address and shared by every visitor.
       - key: TRUST_PROXY
-        value: "1"
+        value: "3"
       - key: SIMULATION_ENABLED
         value: "true"

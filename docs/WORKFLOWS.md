@@ -91,7 +91,7 @@ files and the exact values to paste.
 | Start command | `npm start` |
 | Health check path | `/api/health` |
 | Plan | Free |
-| Env vars | `NODE_VERSION=24`, `STORAGE=mongo`, `MONGO_URI`, `MONGO_DB=chatelaine`, `JWT_SECRET` (generated), `JWT_TTL=2h`, `CORS_ORIGIN=<vercel url>`, `TRUST_PROXY=1`, `SIMULATION_ENABLED=true`, `NODE_ENV=production` |
+| Env vars | `NODE_VERSION=24`, `STORAGE=mongo`, `MONGO_URI`, `MONGO_DB=chatelaine`, `JWT_SECRET` (generated), `JWT_TTL=2h`, `CORS_ORIGIN=<vercel url>`, `TRUST_PROXY=3`, `SIMULATION_ENABLED=true`, `NODE_ENV=production` |
 
 `NODE_VERSION=24` matches `.nvmrc`. Without it, Render resolves `engines: ">=24"` to the
 newest major it offers, which could differ from what was tested.
@@ -150,7 +150,7 @@ gates (lint, format, typecheck, tests) are green in both packages touched.
 | **4. Dashboard** | 4 | `toLoadState`; access card, summary strip, records table with server-side paging, sort, filter; role-dependent columns; expandable internal note for admins; mobile list layout | Each panel loads, empties and errors on its own (using `delay` and `fail`); General and Admin views differ exactly as §5 says; usable at 360 px; no skeleton flash on paging |
 | **5. Admin** | 5 | Lazy admin route; users table with URL-backed query state; create and edit dialog with async userId check; delete dialog with record count and "Disable instead"; self-row protections | Full create, edit, disable, delete round trip on the deployed-like setup; `USER_EXISTS` shown in the real UI (a console-made user takes the free ID between the availability check and the submit); `SELF_ACTION` proved by the API tests plus a component test showing the dialog displays the 409, and by calling the API directly with the admin's own token; admin chunk appears as a separate file in `ng build` output |
 | **6. Latency lab** | 6 | `LatencySettingsStore`, `RequestLogStore`, lab drawer, presets, fail-next, three strategies, timeout, reload with cancellation, request timeline | Switching strategy visibly changes the timeline; double "Reload dashboard" shows cancelled bars; a 10 s delay with a 5 s timeout shows the timeout state; timeline is usable by keyboard; reduced motion respected |
-| **7. Ship** | 7 | CI; Render, Atlas, Vercel deploy; README complete; accessibility pass in both themes; fresh-clone check; demo recording (DJK) | CI green; live URLs work from a cold start; a fresh clone runs locally in under 10 minutes using only the README; `req.ip` logged once on Render matches the client's real IP, confirming `TRUST_PROXY=1` before the rate limit relies on it (then the log line is removed); every item in §32 holds |
+| **7. Ship** | 7 | CI; Render, Atlas, Vercel deploy; README complete; accessibility pass in both themes; fresh-clone check; demo recording (DJK) | CI green; live URLs work from a cold start; a fresh clone runs locally in under 10 minutes using only the README; `req.ip` logged once on Render matches the client's real IP, confirming `TRUST_PROXY=3` before the rate limit relies on it (then the log line is removed); every item in §32 holds |
 
 **If a day slips:** move the DynamoDB adapter from Stage 2 to the end of Stage 7 first (the
 file and Mongo adapters still prove the contract), then drop the Playwright stretch goal.
