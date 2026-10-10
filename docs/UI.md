@@ -309,9 +309,71 @@ errors as direction, not apology.
   Badges and chips always include text, never color alone.
 - **Live regions:** the boot status, form errors and snackbars are announced. Panels set
   `aria-busy` while loading.
-- **Contrast:** AA for all text (§22). Checked in both themes at Stage 7.
+- **Contrast:** AA for all text (§22), measured in both themes at Stage 7 (§39).
 - **Width:** usable at 360px. The table becomes a list, the lab becomes a bottom sheet.
 - **Motion:** skeleton to content is a 150ms crossfade, no slide-ups, no staggered
-  entrances. Dialog and drawer use Material's default transitions. Timeline bars grow only
-  while pending. `prefers-reduced-motion: reduce` removes the crossfade and the bar growth
-  (bars jump to their final length).
+  entrances. Dialogs use Material's default transitions; the lab drawer has none. Timeline
+  bars grow only while pending. `prefers-reduced-motion: reduce` removes the crossfade and
+  the bar growth: a pending bar is drawn at a fixed length labelled "Pending" and takes its
+  true length when the request ends.
+
+## §39 Contrast record (Stage 7)
+
+Every foreground and background pair the app uses, computed from `styles/_tokens.scss` with
+the WCAG relative-luminance formula (text needs 4.5:1, outlines and other graphics 3:1).
+Every pair passes in both themes. The lowest text ratio is 4.64:1 (light, `--brass` on
+`--brass-tint`).
+
+The timeline's "network and browser" fill is `color-mix(in srgb, var(--ink) 50%, var(--surface))`.
+At 40% it measured 2.32:1 against the panel in light mode, so it was raised to 50%, which is
+3.01:1 (light) and 4.22:1 (dark) and still reads differently from the solid ink segment beside
+it. The bar itself always has a 1px ink outline, so its edge is 13.98:1 (light) and 12.39:1
+(dark) whatever its fill.
+
+### Light
+
+| Foreground | Background | Ratio | Needs | Use |
+|---|---|---|---|---|
+| `ink` | `page` | 12.40 | 4.5 | Body text on the page |
+| `ink` | `surface` | 13.98 | 4.5 | Body text on a panel |
+| `ink-muted` | `page` | 5.35 | 4.5 | Secondary text on the page |
+| `ink-muted` | `surface` | 6.03 | 4.5 | Secondary text, hints and legend on a panel |
+| `verdigris` | `verdigris-tint` | 4.86 | 4.5 | General role badge text |
+| `verdigris` | `surface` | 5.90 | 4.5 | General accent text on a panel |
+| `brass` | `brass-tint` | 4.64 | 4.5 | Admin role badge text |
+| `brass` | `surface` | 5.72 | 4.5 | Admin accent text on a panel |
+| `signal` | `signal-tint` | 5.37 | 4.5 | Error message text |
+| `signal` | `surface` | 6.57 | 4.5 | Error outcome word on a panel |
+| `surface` | `ink` | 13.98 | 4.5 | Count pill, chosen preset |
+| `surface` | `signal` | 6.57 | 4.5 | Delete button label |
+| `ink` | `surface` | 13.98 | 3 | Bar outline, focus ring |
+| `signal` | `surface` | 6.57 | 3 | Error bar outline, timeout edge |
+| `verdigris` | `surface` | 5.90 | 3 | General key tag outline |
+| `brass` | `surface` | 5.72 | 3 | Admin key tag outline |
+| network fill (ink 50% on surface) | `surface` | 3.01 | 3 | Segment fill; the 1px ink outline also carries the bar |
+
+lowest text ratio: 4.64
+
+### Dark
+
+| Foreground | Background | Ratio | Needs | Use |
+|---|---|---|---|---|
+| `ink` | `page` | 14.04 | 4.5 | Body text on the page |
+| `ink` | `surface` | 12.39 | 4.5 | Body text on a panel |
+| `ink-muted` | `page` | 7.37 | 4.5 | Secondary text on the page |
+| `ink-muted` | `surface` | 6.50 | 4.5 | Secondary text, hints and legend on a panel |
+| `verdigris` | `verdigris-tint` | 4.93 | 4.5 | General role badge text |
+| `verdigris` | `surface` | 6.59 | 4.5 | General accent text on a panel |
+| `brass` | `brass-tint` | 5.67 | 4.5 | Admin role badge text |
+| `brass` | `surface` | 7.63 | 4.5 | Admin accent text on a panel |
+| `signal` | `signal-tint` | 5.09 | 4.5 | Error message text |
+| `signal` | `surface` | 5.77 | 4.5 | Error outcome word on a panel |
+| `surface` | `ink` | 12.39 | 4.5 | Count pill, chosen preset |
+| `surface` | `signal` | 5.77 | 4.5 | Delete button label |
+| `ink` | `surface` | 12.39 | 3 | Bar outline, focus ring |
+| `signal` | `surface` | 5.77 | 3 | Error bar outline, timeout edge |
+| `verdigris` | `surface` | 6.59 | 3 | General key tag outline |
+| `brass` | `surface` | 7.63 | 3 | Admin key tag outline |
+| network fill (ink 50% on surface) | `surface` | 4.22 | 3 | Segment fill; the 1px ink outline also carries the bar |
+
+lowest text ratio: 4.93

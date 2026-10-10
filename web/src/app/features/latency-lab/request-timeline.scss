@@ -139,7 +139,8 @@
 
 .network,
 .swatch.network {
-  background: color-mix(in srgb, var(--ink) 40%, var(--surface));
+  // 50%: 3:1 against the panel in both themes, measured at Stage 7 (docs/UI.md).
+  background: color-mix(in srgb, var(--ink) 50%, var(--surface));
 }
 
 .swatch {

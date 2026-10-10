@@ -2,7 +2,7 @@
 
 Section numbers are global across `docs/` and are cited from code comments, commit messages
 and other docs, so they are never renumbered. New sections are appended at the end of a
-file and take the next free number (currently §39). Decisions are numbered separately as
+file and take the next free number (currently §40). Decisions are numbered separately as
 D-entries inside §27.
 
 | § | Section | File |
@@ -45,6 +45,7 @@ D-entries inside §27.
 | §36 | Web tests | [TEST_PLAN.md](TEST_PLAN.md) |
 | §37 | Guard checks | [TEST_PLAN.md](TEST_PLAN.md) |
 | §38 | Manual demo script | [TEST_PLAN.md](TEST_PLAN.md) |
+| §39 | Contrast record (Stage 7) | [UI.md](UI.md) |
 
 ## Reading order
 
