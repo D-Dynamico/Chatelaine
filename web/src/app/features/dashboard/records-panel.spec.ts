@@ -90,13 +90,15 @@ describe('RecordsPanel', () => {
   });
 
   it('searches 300 ms after typing stops, in the URL, without adding history', async () => {
-    // debounceTime schedules with setInterval and measures with Date.now.
-    vi.useFakeTimers({
-      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'],
-    });
     const panel = await openPanel(RIYA);
     panel.nextRequest().flush(pageOf(1));
     await panel.settle();
+    // After the panel is open, never before: opening it waits for Angular to become stable, which
+    // relies on a setTimeout, and a faked one never fires. rxjs reads setInterval and Date.now
+    // when the debounce is scheduled, so faking them here still controls it.
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'],
+    });
     const navigate = vi.spyOn(panel.router, 'navigate');
     const input = panel.host().querySelector<HTMLInputElement>('input[type="search"]');
     if (!input) throw new Error('No search box');

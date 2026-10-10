@@ -20,13 +20,17 @@ describe('UsersPage', () => {
   });
 
   it('searches 300 ms after typing stops, in the URL, without adding history', async () => {
-    // debounceTime schedules with setInterval and measures with Date.now.
-    vi.useFakeTimers({
-      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'],
-    });
     const page = await openPage();
     page.nextRequest().flush(pageOf(2));
     await page.settle();
+    // After the page is open, never before: opening it waits for Angular to become stable, which
+    // relies on a setTimeout, and a faked one never fires. Faked first, this test hung every time
+    // when run on its own (40 of 40) and timed out once on CI, where the timing differed. rxjs
+    // reads setInterval and Date.now when the debounce is scheduled, so faking them here still
+    // controls it.
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'],
+    });
     const navigate = vi.spyOn(page.router, 'navigate');
     const input = page.host().querySelector<HTMLInputElement>('input[type="search"]');
     if (!input) throw new Error('No search box');
