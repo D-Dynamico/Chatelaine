@@ -1,23 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  Injector,
-  computed,
-  effect,
-  inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { SessionStore } from '../../core/auth/session-store';
 import {
@@ -29,16 +19,12 @@ import {
 } from '../../core/models/user';
 import { injectUrlQuery } from '../../core/routing/url-query';
 import { dataOf, failureOf, isRefreshing } from '../../shared/load-state/load-state';
-import { ConfirmDialog, type ConfirmDialogData } from '../../shared/ui/confirm-dialog';
 import { EmptyState } from '../../shared/ui/empty-state';
-import { ApiError } from '../../core/http/api-error';
 import { ErrorState } from '../../shared/ui/error-state';
 import { RangeLabelIntl } from '../../shared/ui/range-label-intl';
 import { Skeleton } from '../../shared/ui/skeleton';
 import { AdminUsersService } from './admin-users.service';
-import { type UserFormData } from './user-form';
-import { DeleteUserDialog, type DeleteOutcome } from './delete-user-dialog';
-import { UserFormDialog } from './user-form-dialog';
+import { UserActions } from './user-actions';
 import {
   DEFAULT_USER_SORT,
   USERS_QUERY,
@@ -54,22 +40,6 @@ export const USERS_MESSAGES = {
   noneMatch: 'No users match these filters.',
   failed: "Couldn't load users.",
 } as const;
-
-/** The snackbar after each change (§25). */
-export const USER_CONFIRMATIONS = {
-  created: 'User created',
-  saved: 'Changes saved',
-  disabled: 'User disabled',
-  enabled: 'User enabled',
-  deleted: 'User deleted',
-} as const;
-
-const UNEXPECTED_FAILURE = "The change wasn't saved. Try again.";
-
-const CONFIRMATION_MS = 4_000;
-const REFUSAL_MS = 8_000;
-/** Wide enough for the form, never wider than a 360px screen allows. */
-const DIALOG_SIZE = { width: '32rem', maxWidth: 'calc(100vw - 2rem)' } as const;
 
 const options = <V extends string>(values: readonly V[], labels: Readonly<Record<V, string>>) =>
   values.map((value) => ({ value, label: labels[value] }));
@@ -96,15 +66,12 @@ const options = <V extends string>(values: readonly V[], labels: Readonly<Record
   ],
   templateUrl: './users-page.html',
   styleUrl: './users-page.scss',
-  providers: [{ provide: MatPaginatorIntl, useClass: RangeLabelIntl }],
+  providers: [UserActions, { provide: MatPaginatorIntl, useClass: RangeLabelIntl }],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsersPage {
   private readonly admin = inject(AdminUsersService);
-  private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
-  private readonly injector = inject(Injector);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly actions = inject(UserActions);
   private readonly session = inject(SessionStore);
   protected readonly currentUserId = computed(() => this.session.user()?.userId ?? '');
   protected readonly query = injectUrlQuery(USERS_QUERY, 'page');
@@ -181,89 +148,22 @@ export class UsersPage {
   }
 
   protected openCreate(): void {
-    this.openForm({ mode: 'create' }, USER_CONFIRMATIONS.created);
+    this.actions.create();
   }
 
   protected openEdit(user: UserView): void {
-    const isSelf = user.userId === this.currentUserId();
-    this.openForm({ mode: 'edit', user, isSelf }, USER_CONFIRMATIONS.saved);
-  }
-
-  /**
-   * The dialog gets this page's injector: `MatDialog` lives in root, which cannot see the
-   * route-provided `AdminUsersService`. The dialog closes only after the server accepted
-   * the change (D24), so the table reloads in place and the snackbar confirms it.
-   */
-  private openForm(data: UserFormData, confirmation: string): void {
-    this.dialog
-      .open<UserFormDialog, UserFormData, UserView>(UserFormDialog, {
-        ...DIALOG_SIZE,
-        data,
-        injector: this.injector,
-      })
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((saved) => {
-        if (saved) this.confirm(confirmation);
-      });
+    this.actions.edit(user, user.userId === this.currentUserId());
   }
 
   protected openDisable(user: UserView): void {
-    const data: ConfirmDialogData = {
-      title: `Disable ${user.displayName}?`,
-      message: "They'll lose access on their next action. You can enable them again later.",
-      confirmLabel: 'Disable user',
-    };
-    this.dialog
-      .open<ConfirmDialog, ConfirmDialogData, boolean>(ConfirmDialog, { ...DIALOG_SIZE, data })
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((isConfirmed) => {
-        if (isConfirmed) this.setStatus(user, 'DISABLED', USER_CONFIRMATIONS.disabled);
-      });
+    this.actions.disable(user);
   }
 
-  /** Enabling only gives access back, so it asks nothing. */
   protected enableUser(user: UserView): void {
-    this.setStatus(user, 'ACTIVE', USER_CONFIRMATIONS.enabled);
+    this.actions.enable(user);
   }
 
   protected openDelete(user: UserView): void {
-    this.dialog
-      .open<DeleteUserDialog, UserView, DeleteOutcome>(DeleteUserDialog, {
-        ...DIALOG_SIZE,
-        data: user,
-        injector: this.injector,
-      })
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((outcome) => {
-        if (outcome === 'deleted') this.confirm(USER_CONFIRMATIONS.deleted);
-        if (outcome === 'disabled') this.confirm(USER_CONFIRMATIONS.disabled);
-      });
-  }
-
-  /**
-   * A refusal (such as `LAST_ADMIN`) has no dialog to show it in, so it is said in a
-   * snackbar in the API's own words. Nothing changes on screen until the server agrees.
-   */
-  private setStatus(user: UserView, status: UserView['status'], confirmation: string): void {
-    this.admin
-      .update(user.userId, { status })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.confirm(confirmation);
-        },
-        error: (error: unknown) => {
-          const message = error instanceof ApiError ? error.message : UNEXPECTED_FAILURE;
-          this.snackBar.open(message, undefined, { duration: REFUSAL_MS });
-        },
-      });
-  }
-
-  private confirm(message: string): void {
-    this.admin.reload();
-    this.snackBar.open(message, undefined, { duration: CONFIRMATION_MS });
+    this.actions.delete(user);
   }
 }
