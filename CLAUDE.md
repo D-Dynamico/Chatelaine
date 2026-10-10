@@ -164,10 +164,9 @@ that test is not protecting anything. Details: `docs/TEST_PLAN.md`.
 
 ## Status
 
-Stages 0 to 6 (docs, API foundation, data and admin API, web foundation, dashboard, admin,
-latency lab) are done and pushed. Stage 7 (ship) is in progress: everything that needs no
-account is done and committed, and the deploy waits on DJK. See
-`docs/sessions/2026-10-10-stage7.md`.
+Stages 0 to 7 (docs, API foundation, data and admin API, web foundation, dashboard, admin,
+latency lab, ship) are done and pushed, and the app is live. What remains is DJK's: confirm CI,
+make the repository public, and record the demo. See `docs/sessions/2026-10-10-stage7.md`.
 Stages and exit criteria: `docs/WORKFLOWS.md` §31.
 Open questions are tracked in the newest session note, not here.
 
