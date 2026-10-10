@@ -116,6 +116,37 @@ describe('SummaryPanel', () => {
     );
   });
 
+  it('filters the table by a count, and clears it when the active count is pressed', () => {
+    const fixture = TestBed.createComponent(SummaryPanel);
+    fixture.componentRef.setInput('state', {
+      status: 'loaded',
+      data: summary(),
+      isRefreshing: false,
+    });
+    fixture.componentRef.setInput('activeStatus', 'RESOLVED');
+    fixture.detectChanges();
+    const pick = vi.fn();
+    fixture.componentInstance.pick.subscribe(pick);
+    const buttons = [...(fixture.nativeElement as HTMLElement).querySelectorAll('.counts button')];
+    const [open, , resolved, , critical] = buttons as HTMLButtonElement[];
+
+    expect(buttons.map((button) => button.getAttribute('aria-pressed'))).toEqual([
+      'false',
+      'false',
+      'true',
+      'false',
+      'false',
+    ]);
+    open?.click();
+    resolved?.click();
+    critical?.click();
+    expect(pick.mock.calls).toEqual([
+      [{ status: 'OPEN' }],
+      [{ status: undefined }],
+      [{ priority: 'CRITICAL' }],
+    ]);
+  });
+
   it('says there are no requests yet when empty', () => {
     const { host } = render(SummaryPanel, {
       status: 'empty',

@@ -13,15 +13,34 @@
         }
       }
     </div>
-    <ul class="counts">
+    <ul class="counts" aria-label="Filter requests by status">
       @for (segment of statuses(); track segment.status) {
         <li>
-          <span class="swatch" [class]="'status-' + segment.status" aria-hidden="true"></span>
-          {{ segment.label }} <span class="count tabular">{{ segment.count }}</span>
+          <button
+            type="button"
+            class="stat"
+            [attr.aria-pressed]="activeStatus() === segment.status"
+            (click)="pickStatus(segment.status)"
+          >
+            <span class="stat-label">
+              <span class="swatch" [class]="'status-' + segment.status" aria-hidden="true"></span>
+              {{ segment.label }}
+            </span>
+            <!-- Kept, so the button reads "Open 5", not "Open5". -->
+            &ngsp;<span class="stat-count tabular">{{ segment.count }}</span>
+          </button>
         </li>
       }
       <li class="critical">
-        Critical <span class="count tabular">{{ data.byPriority.CRITICAL }}</span>
+        <button
+          type="button"
+          class="stat"
+          [attr.aria-pressed]="activePriority() === 'CRITICAL'"
+          (click)="pickCritical()"
+        >
+          <span class="stat-label">Critical</span>
+          &ngsp;<span class="stat-count tabular">{{ data.byPriority.CRITICAL }}</span>
+        </button>
       </li>
     </ul>
     @if (accessSplit().length > 0) {

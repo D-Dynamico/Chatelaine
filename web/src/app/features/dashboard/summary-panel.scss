@@ -55,6 +55,48 @@
   }
 }
 
+.counts {
+  gap: var(--space-2);
+}
+
+// A count that filters the table: the label over the number, as a quiet button that only
+// shows its edge on hover and fills with ink when it is the active filter.
+.stat {
+  display: grid;
+  gap: 2px;
+  min-width: 6.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--line);
+    background: var(--page);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--ink);
+    background: var(--page);
+  }
+}
+
+.stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-muted);
+  font: var(--type-small);
+}
+
+.stat-count {
+  font: var(--type-heading);
+}
+
 .swatch {
   width: 10px;
   height: 10px;
