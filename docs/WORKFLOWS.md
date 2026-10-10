@@ -87,7 +87,7 @@ files and the exact values to paste.
 | Setting | Value |
 |---|---|
 | Root directory | `api` |
-| Build command | `npm ci && npm run build` |
+| Build command | `npm ci --include=dev && npm run build` |
 | Start command | `npm start` |
 | Health check path | `/api/health` |
 | Plan | Free |
@@ -95,6 +95,11 @@ files and the exact values to paste.
 
 `NODE_VERSION=24` matches `.nvmrc`. Without it, Render resolves `engines: ">=24"` to the
 newest major it offers, which could differ from what was tested.
+
+`--include=dev` is needed because `NODE_ENV=production` is set for the build as well, and
+`npm ci` then skips devDependencies, yet `npm run build` needs `tsc` and `rimraf`. Plain
+`npm ci && npm run build` fails with "'rimraf' is not recognized" (checked in a clean
+copy at Stage 7). The start command needs only the runtime dependencies.
 
 The free instance sleeps after 15 idle minutes and takes about a minute to wake. The app
 shows this on boot (§16). Before a live review, open the health URL once to wake it.
