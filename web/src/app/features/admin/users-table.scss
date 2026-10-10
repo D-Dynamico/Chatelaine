@@ -35,6 +35,7 @@
   text-align: end;
 }
 
+@include stacked-table.rows('.user-row', '.user');
 @include stacked-table.stacked('.users', '.header-row', '.user-row', '.user');
 
 @media (max-width: 720px) {

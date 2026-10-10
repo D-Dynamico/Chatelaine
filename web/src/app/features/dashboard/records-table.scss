@@ -15,6 +15,12 @@
   min-width: 14rem;
 }
 
+// The note toggle is an icon button with its own touch padding; the cell adds none.
+.mat-column-expand {
+  width: var(--space-7);
+  padding-inline: 0;
+}
+
 .owner {
   display: block;
 }
@@ -25,7 +31,15 @@
   font: var(--type-small);
 }
 
+@include stacked-table.rows('.record-row', '.title');
+
 // The note row stays in the table for its row's structure, but takes no room until opened.
+// Material gives every row a fixed height, so without `height: auto` a closed note row
+// still left a full empty row under each record that has a note.
+.note-row {
+  height: auto;
+}
+
 .note-row:not(.open) td {
   padding: 0;
   border-bottom-width: 0;
@@ -33,6 +47,7 @@
 
 .note {
   display: grid;
+  white-space: normal;
   gap: var(--space-1);
   max-width: var(--reading-max);
   padding: var(--space-2) 0 var(--space-3);

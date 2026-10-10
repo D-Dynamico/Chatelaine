@@ -23,6 +23,25 @@
   );
 }
 
+// Dense rows that keep short values on one line, as issue trackers do: an ID or "3 weeks
+// ago" broken over two lines reads as two values. Only `$wrapping` cells (titles, names)
+// may wrap. The row tint on hover helps the eye follow a wide row; it is not a click target.
+@mixin rows($row, $wrapping) {
+  th,
+  td {
+    padding-inline: var(--space-3);
+    white-space: nowrap;
+  }
+
+  #{$wrapping} {
+    white-space: normal;
+  }
+
+  #{$row}:hover td {
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+}
+
 @mixin stacked($table, $header-row, $row, $lead) {
   @media (max-width: 720px) {
     #{$table},
