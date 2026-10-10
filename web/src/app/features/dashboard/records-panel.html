@@ -10,7 +10,8 @@
     <mat-form-field appearance="outline" class="search" subscriptSizing="dynamic">
       <mat-label>Search ID or title</mat-label>
       <mat-icon matPrefix aria-hidden="true">search</mat-icon>
-      <input matInput type="search" [formControl]="search" maxlength="60" />
+      <input matInput appSearchShortcut type="search" [formControl]="search" maxlength="60" />
+      <kbd matSuffix class="shortcut" aria-hidden="true">/</kbd>
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">

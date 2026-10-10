@@ -31,17 +31,40 @@
     gap: var(--space-3);
   }
 
+  // Compact controls, as in Linear and GitHub: filters are scanned and changed often, so
+  // they take 40px rather than the 56px a form's fields need.
   .filters {
+    @include mat.form-field-overrides(
+      (
+        container-height: 40px,
+        container-vertical-padding: 8px,
+      )
+    );
+
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
 
     mat-form-field {
-      width: 11rem;
+      width: 10rem;
     }
 
     .search {
-      width: 16rem;
+      width: 18rem;
+    }
+  }
+
+  // The "/" hint (§40). Hidden where there is no keyboard to press it with.
+  .shortcut {
+    margin-right: var(--space-3);
+    padding: 0 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink-muted);
+    font: var(--type-small);
+
+    @media (hover: none) {
+      display: none;
     }
   }
 

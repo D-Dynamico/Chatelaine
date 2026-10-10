@@ -22,6 +22,7 @@ import { dataOf, failureOf, isRefreshing } from '../../shared/load-state/load-st
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
 import { RangeLabelIntl } from '../../shared/ui/range-label-intl';
+import { SearchShortcut } from '../../shared/ui/search-shortcut';
 import { Skeleton } from '../../shared/ui/skeleton';
 import { AdminUsersService } from './admin-users.service';
 import { UserActions } from './user-actions';
@@ -61,6 +62,7 @@ const options = <V extends string>(values: readonly V[], labels: Readonly<Record
     MatProgressBarModule,
     MatSelectModule,
     ReactiveFormsModule,
+    SearchShortcut,
     Skeleton,
     UsersTable,
   ],

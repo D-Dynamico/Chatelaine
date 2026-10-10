@@ -22,6 +22,7 @@ import { dataOf, failureOf, isRefreshing } from '../../shared/load-state/load-st
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
 import { RangeLabelIntl } from '../../shared/ui/range-label-intl';
+import { SearchShortcut } from '../../shared/ui/search-shortcut';
 import { Skeleton } from '../../shared/ui/skeleton';
 import { DashboardDataService } from './dashboard-data.service';
 import { RECORDS_QUERY, type RecordsUrlState, hasFilters, toRecordQuery } from './records-query';
@@ -56,6 +57,7 @@ const options = <V extends string>(values: readonly V[], labels: Readonly<Record
     MatSelectModule,
     ReactiveFormsModule,
     RecordsTable,
+    SearchShortcut,
     Skeleton,
   ],
   templateUrl: './records-panel.html',
