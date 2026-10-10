@@ -85,6 +85,31 @@ body {
   text-align: center;
 }
 
+// The brand mark, inline because Angular has not started yet. Slow breathing, so a cold
+// start of the free-tier server reads as "waking up", not "stuck".
+.boot-splash__mark {
+  justify-self: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  fill: none;
+  stroke: var(--ink-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-splash__mark {
+    animation: none;
+  }
+}
+
 .boot-splash__name {
   margin: 0;
   font: var(--type-display);

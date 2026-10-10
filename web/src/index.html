@@ -5,7 +5,8 @@
     <title>Chatelaine</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" sizes="any" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -22,6 +23,10 @@
     <!-- Static splash (§16): covers the page until the first route has rendered, then
          provideBootSplash() removes it. The boot sequence writes into #boot-status. -->
     <div id="boot-splash" class="boot-splash">
+      <svg class="boot-splash__mark" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="8.5" cy="8.5" r="5.5" />
+        <path d="M12.5 12.5 21 21M17 17l2.5-2.5M19.5 19.5l1.75-1.75" />
+      </svg>
       <p class="boot-splash__name">Chatelaine</p>
       <p id="boot-status" class="boot-splash__status" role="status" aria-live="polite">
         Connecting to the server

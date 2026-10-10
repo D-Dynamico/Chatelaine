@@ -23,6 +23,7 @@ import { NoticeStore } from '../core/notices/notice-store';
 import { APP_PATHS } from '../core/routing/app-paths';
 import { ThemeService } from '../core/theme/theme.service';
 import { LatencyLabPanel } from '../features/latency-lab/latency-lab-panel';
+import { BrandMark } from '../shared/ui/brand-mark';
 import { AccountMenu } from './account-menu';
 import { ThemeMenu } from './theme-menu';
 
@@ -36,6 +37,7 @@ export const SIGNED_OUT_MESSAGE = 'Signed out';
   selector: 'app-shell',
   imports: [
     AccountMenu,
+    BrandMark,
     LatencyLabPanel,
     MatButtonModule,
     MatIconModule,
