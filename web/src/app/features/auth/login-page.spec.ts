@@ -104,6 +104,25 @@ describe('LoginPage', () => {
     expect(login.selectedRole()).toContain('Admin');
   });
 
+  it('marks the picked demo tag and waits on "Sign in", until the user ID is changed', async () => {
+    const login = await openLogin();
+    const tags = [...login.page.querySelectorAll<HTMLButtonElement>('app-demo-accounts button')];
+    const pressed = () =>
+      tags
+        .filter((tag) => tag.getAttribute('aria-pressed') === 'true')
+        .map((tag) => tag.textContent);
+
+    tags.find((tag) => tag.textContent.includes('riya'))?.click();
+    await login.harness.fixture.whenStable();
+
+    expect(pressed()).toEqual([expect.stringContaining('riya')]);
+    expect(document.activeElement).toBe(login.submitButton());
+
+    login.type('userId', 'someone.else');
+    await login.harness.fixture.whenStable();
+    expect(pressed()).toEqual([]);
+  });
+
   it('shows one generic message for refused credentials', async () => {
     const login = await openLogin();
     login.type('userId', 'kabir');

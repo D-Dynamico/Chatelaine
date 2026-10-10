@@ -1,12 +1,14 @@
 <main class="login">
   <section class="intro" aria-labelledby="app-name">
-    <h1 class="app-name" id="app-name">Chatelaine</h1>
-    <p class="tagline">Service requests, scoped to who you are.</p>
-    <app-demo-accounts (pick)="fillFrom($event)" />
-    <app-server-line [state]="server()" [isRetrying]="isRetrying()" (retry)="retryServer()" />
+    <div class="intro-content">
+      <h1 class="app-name" id="app-name"><app-brand-mark />Chatelaine</h1>
+      <p class="tagline">Service requests, scoped to who you are.</p>
+      <app-demo-accounts [selectedId]="userId()" (pick)="fillFrom($event)" />
+      <app-server-line [state]="server()" [isRetrying]="isRetrying()" (retry)="retryServer()" />
+    </div>
   </section>
 
-  <section class="panel" aria-labelledby="sign-in-title">
+  <section class="sign-in" aria-labelledby="sign-in-title">
     <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <h2 class="page-title" id="sign-in-title">Sign in</h2>
 
@@ -68,7 +70,13 @@
         }
       </div>
 
-      <button mat-flat-button class="submit" type="submit" [disabled]="isSubmitting()">
+      <button
+        #submitButton
+        mat-flat-button
+        class="submit"
+        type="submit"
+        [disabled]="isSubmitting()"
+      >
         {{ isSubmitting() ? 'Signing in' : 'Sign in' }}
       </button>
     </form>

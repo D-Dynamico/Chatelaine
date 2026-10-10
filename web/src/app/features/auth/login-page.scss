@@ -6,29 +6,50 @@
   min-height: 100vh;
 }
 
+// A faint dot grid in ink, fading toward the form: texture without color, which in this
+// app is kept for access (§21, §40).
+// Each half centres one capped column; an auto track would grow to its content's widest
+// line and leave the content pinned to the left edge.
 .intro {
   display: grid;
+  grid-template-columns: minmax(0, 28rem);
   align-content: center;
-  gap: var(--space-6);
+  justify-content: center;
   padding: var(--space-8) var(--space-6);
-  background: var(--page);
+  background-color: var(--page);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--ink) 14%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+}
+
+.intro-content {
+  display: grid;
+  gap: var(--space-6);
 }
 
 .app-name {
+  --brand-mark-size: 2rem;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
   margin: 0;
-  font: var(--type-display);
+  font: var(--type-title);
 }
 
 .tagline {
-  margin: calc(-1 * var(--space-5)) 0 0;
-  color: var(--ink-muted);
-  font: var(--type-heading);
-  font-weight: 400;
+  margin: calc(-1 * var(--space-3)) 0 0;
+  font: var(--type-display);
+  text-wrap: balance;
 }
 
-.panel {
+.sign-in {
   display: grid;
+  grid-template-columns: minmax(0, 400px);
   align-content: center;
+  justify-content: center;
   padding: var(--space-8) var(--space-6);
   background: var(--surface);
 }
@@ -118,12 +139,18 @@
     grid-template-columns: 1fr;
   }
 
-  .panel {
+  .sign-in {
     order: -1;
+    grid-template-columns: minmax(0, 1fr);
     padding: var(--space-6) var(--space-4);
   }
 
   .intro {
+    grid-template-columns: minmax(0, 1fr);
     padding: var(--space-6) var(--space-4);
+  }
+
+  .tagline {
+    font: var(--type-title);
   }
 }

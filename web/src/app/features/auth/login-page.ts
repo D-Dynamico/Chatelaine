@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +23,7 @@ import { BootSequence } from '../../core/init/boot-sequence';
 import { BootStatus } from '../../core/init/boot-status';
 import { type Role } from '../../core/models/user';
 import { safeReturnUrl } from '../../core/routing/return-url';
+import { BrandMark } from '../../shared/ui/brand-mark';
 import { DEMO_PASSWORD, type DemoAccount, DemoAccounts } from './demo-accounts';
 import { ServerLine } from './server-line';
 
@@ -37,6 +46,7 @@ function messageFor(error: unknown): string {
 @Component({
   selector: 'app-login-page',
   imports: [
+    BrandMark,
     DemoAccounts,
     MatButtonModule,
     MatButtonToggleModule,
@@ -71,14 +81,25 @@ export class LoginPage {
   protected readonly isRetrying = signal(false);
   protected readonly isPasswordVisible = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  /** Which demo tag reads as chosen: the one whose user ID is in the box right now. */
+  protected readonly userId = toSignal(this.form.controls.userId.valueChanges, {
+    initialValue: '',
+  });
   protected readonly isExpired = toSignal(
     this.route.queryParamMap.pipe(map((params) => params.get('reason') === 'expired')),
     { initialValue: false },
   );
 
+  // `read: ElementRef`: on a Material button the plain reference is the component.
+  private readonly submitButton = viewChild<string, ElementRef<HTMLButtonElement>>('submitButton', {
+    read: ElementRef,
+  });
+
+  /** The form is complete after a pick, so focus waits on "Sign in": Enter signs in. */
   protected fillFrom(account: DemoAccount): void {
     this.form.setValue({ userId: account.userId, password: DEMO_PASSWORD, role: account.role });
     this.errorMessage.set(null);
+    this.submitButton()?.nativeElement.focus();
   }
 
   protected submit(): void {

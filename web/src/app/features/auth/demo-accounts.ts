@@ -35,6 +35,7 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
             type="button"
             class="tag"
             [class.disabled-account]="account.isDisabled"
+            [attr.aria-pressed]="account.userId === selectedId()"
             (click)="pick.emit(account)"
           >
             <span class="user-id">{{ account.userId }}</span>
@@ -59,6 +60,8 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
 })
 export class DemoAccounts {
   readonly accounts = input<readonly DemoAccount[]>(DEMO_ACCOUNTS);
+  /** The user ID in the form, so the tag that filled it reads as chosen. */
+  readonly selectedId = input('');
   readonly pick = output<DemoAccount>();
 
   protected readonly password = DEMO_PASSWORD;
