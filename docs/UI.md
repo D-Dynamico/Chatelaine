@@ -157,7 +157,8 @@ default font set. Adding an icon means adding its name to that list.
 ```
 
 - Left half on `--page`, right half on `--surface`. Under 720px they stack, form first.
-- **Demo accounts are key tags:** a pill with a small punched-hole circle on the left,
+  Each half centres one capped column; the intro carries the brand mark (§40).
+- **Demo accounts are key tags** (two by two, §40): a pill with a small punched-hole circle on the left,
   colored by role. Selecting one fills the user ID, password and role. Kabir's tag is muted
   and reads "Disabled" so evaluators can see the refusal on purpose.
 - **Role selector** is a two-option segmented control. Each option shows one line under
@@ -177,6 +178,7 @@ default font set. Adding an icon means adding its name to that list.
 ```
 
 - Nav shows "Users" only to admins (the route guard and the API enforce it anyway).
+- The top bar is sticky and carries the role keyline, so the keyline stays in view (§40).
 - "Timeline" opens the latency lab drawer and shows a small count when requests are in
   flight. A 2px progress line under the top bar shows while any request is pending.
 - The avatar menu holds the user's name, role badge and "Sign out".
@@ -207,7 +209,8 @@ default font set. Adding an icon means adding its name to that list.
   in the role color, echoing the keyline. Meta items are separated by spacing and a thin
   vertical divider, not by middle dots.
 - **Summary strip:** total, then one horizontal bar split by status with labelled
-  segments, then counts. Admins also get a split by access level.
+  segments, then counts. Admins also get a split by access level. Each count, and
+  Critical, filters the records table (§40).
 - **Records table:** General Users see ID, title, category, priority, status, updated.
   Admins also see owner, access level (key tag) and assignee; the internal note opens in
   an expandable row. Priority is a mark of 1 to 4 short bars plus the word. Under 720px
@@ -312,7 +315,8 @@ errors as direction, not apology.
 - **Contrast:** AA for all text (§22), measured in both themes at Stage 7 (§39).
 - **Width:** usable at 360px. The table becomes a list, the lab becomes a bottom sheet.
 - **Motion:** skeleton to content is a 150ms crossfade, no slide-ups, no staggered
-  entrances. Dialogs use Material's default transitions; the lab drawer has none. Timeline
+  entrances. Dialogs use Material's default transitions; the lab drawer has none. The boot
+  splash mark breathes slowly while the server wakes (§40). Timeline
   bars grow only while pending. `prefers-reduced-motion: reduce` removes the crossfade and
   the bar growth: a pending bar is drawn at a fixed length labelled "Pending" and takes its
   true length when the request ends.
@@ -377,3 +381,58 @@ lowest text ratio: 4.64
 | network fill (ink 50% on surface) | `surface` | 4.22 | 3 | Segment fill; the 1px ink outline also carries the bar |
 
 lowest text ratio: 4.93
+
+## §40 Interface refinements after Stage 7
+
+A pass over the finished app against the patterns of well-regarded product interfaces
+(Linear, GitHub, Vercel, Stripe), keeping §21 intact: color still means access and
+nothing else, structure is still tone rather than boxes, and nothing below adds a
+dependency. Each change answers a problem seen in the running app, not a style preference.
+
+**Fixes found in the running app**
+
+- **Empty rows in the records table.** Material gives every row a fixed height, so each
+  closed internal-note row still took a full row. The note row now sizes to its content.
+- **Short values broke over two lines.** "SR-" over "1060", "3 weeks" over "ago". Both
+  tables keep short cells on one line (only titles and names wrap), with tighter cell
+  padding and a faint tint on the hovered row. The admin table now fits 1200px.
+- **The sign-in page** sat against the left edge of its half, and the form half took the
+  global `.panel` radius. Each half now centres a capped column.
+- **The users search label was cut off.** The search box is wider.
+
+**Interaction**
+
+- **Summary counts filter the table** (Stripe, Linear). Each status count and Critical is
+  a toggle button with `aria-pressed`: pressing it writes `?status=` or `?priority=` to the
+  URL the table reads, pressing the active one clears it, and the pressed state follows the
+  selects too. The summary stays presentational; the dashboard page writes the URL.
+- **"/" focuses the list's search** (GitHub, Linear), through the `SearchShortcut`
+  directive. It never fires in an editable field or with a modifier held. The input has
+  `aria-keyshortcuts="/"` and shows a key hint, hidden on devices without hover.
+- **Compact filters.** Filter fields are 40px (Material's `form-field-overrides`), not the
+  56px a form uses. Forms and dialogs keep the full height.
+- **Picking a demo account** marks its tag (ink ring, `aria-pressed`) until the user ID is
+  edited, and moves focus to "Sign in", so one click and Enter signs in.
+
+**Frame and identity**
+
+- **A sticky, translucent top bar** (Vercel, Linear) that carries the role keyline, so the
+  signal of which role is in use stays in view on a long table. The page blurs beneath it.
+- **The active nav link is a filled pill.** The old underline plus bolder text made the
+  label change width as it became active.
+- **A brand mark:** a ring and one key, `BrandMark`, drawn in `currentColor`. The shell
+  paints it in the role color (so it obeys principle 1); the sign-in page and the boot
+  splash use ink. The same drawing is the favicon (`public/favicon.svg`), which repeats the
+  `--ink` values because a favicon cannot read CSS variables.
+- **The sign-in intro** has a faint ink dot grid behind it: texture without color.
+
+**Contrast of the new pairs**, by the method of §39 (all pass; lowest text 5.35:1):
+
+| Pair | Light | Dark |
+|---|---|---|
+| `ink` on the active nav pill (ink 10% over the bar) | 11.39 | 9.60 |
+| `ink-muted` on the translucent bar (surface 85% over page) | 5.93 | 6.64 |
+| `ink-muted` on a hovered row (ink 4% over surface) | 5.61 | 5.85 |
+| `ink-muted` stat label on `page` (hovered or pressed stat) | 5.35 | 7.37 |
+| `ink` pressed-stat and picked-tag ring on `surface` (3:1 needed) | 13.98 | 12.39 |
+| `ink-muted` boot splash mark on `page` (3:1 needed) | 5.35 | 7.37 |
