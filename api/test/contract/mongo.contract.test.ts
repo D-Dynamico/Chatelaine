@@ -22,7 +22,10 @@ if (uri) {
   describeUserRepositoryContract('mongo', () => openMongoStore(uri));
   describeRecordRepositoryContract('mongo', () => openMongoStore(uri));
 } else {
-  // The suite name is the printed reason (docs/TEST_PLAN.md §35); CI always sets MONGO_URI.
+  // CI must never skip this quietly: a green run would then say nothing about MongoDB.
+  if (process.env.CI)
+    throw new Error('MONGO_URI is unset in CI, so the mongo contract would be skipped');
+  // The suite name is the printed reason (docs/TEST_PLAN.md §35).
   describe.skip('mongo contract suites: skipped because MONGO_URI is unset', () => {
     it('needs a MongoDB to run against', () => undefined);
   });

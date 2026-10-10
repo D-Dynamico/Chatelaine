@@ -124,6 +124,11 @@ request:
   the contract suite runs against all three adapters.
 - **web job:** `npm ci`, `lint`, `format:check`, `typecheck`, `test`, `build`.
 
+The databases come from the repo's own `docker-compose.yml` (`docker compose up -d mongo
+dynamodb`), so CI and local development run the same versions with the same options. When
+`CI` is set, the MongoDB and DynamoDB contract suites throw if their variable is missing
+instead of skipping, so a green run always includes all three adapters.
+
 The README shows the CI badge.
 
 ## §31 Stages and exit criteria

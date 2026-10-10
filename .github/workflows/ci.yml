@@ -1,0 +1,80 @@
+# Continuous integration (docs/WORKFLOWS.md §30). The API job runs the shared repository
+# contract against all three storage adapters, so a green run says something about MongoDB
+# and DynamoDB too; the contract suites fail rather than skip when CI is set and their
+# database is missing.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (lint, types, tests on file, MongoDB and DynamoDB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: api
+    env:
+      MONGO_URI: mongodb://localhost:27017
+      DYNAMO_ENDPOINT: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      # The same versions and options as local development: docker-compose.yml is the one
+      # place they are written down.
+      - name: Start MongoDB and DynamoDB Local
+        working-directory: .
+        run: |
+          docker compose up -d mongo dynamodb
+          for port in 27017 8000; do
+            for attempt in $(seq 1 30); do
+              if (echo > "/dev/tcp/127.0.0.1/$port") 2>/dev/null; then break; fi
+              if [ "$attempt" = 30 ]; then echo "port $port never opened"; exit 1; fi
+              sleep 2
+            done
+          done
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+
+  web:
+    name: Web (lint, types, tests, production build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
