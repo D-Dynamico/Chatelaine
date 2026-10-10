@@ -96,7 +96,7 @@
   <ng-container matColumnDef="updatedAt">
     <th mat-header-cell *matHeaderCellDef mat-sort-header="updatedAt">Updated</th>
     <td mat-cell data-label="Updated" *matCellDef="let row">
-      <app-relative-time [at]="row.updatedAt" />
+      <app-relative-time [at]="row.updatedAt" [now]="now()" />
     </td>
   </ng-container>
 

@@ -399,6 +399,12 @@ dependency. Each change answers a problem seen in the running app, not a style p
 - **The sign-in page** sat against the left edge of its half, and the form half took the
   global `.panel` radius. Each half now centres a capped column.
 - **The users search label was cut off.** The search box is wider.
+- **Relative times never moved.** `RelativeTime` took "now" once, when it was created, so
+  "Last signed in", "Updated" and "Last sign-in" froze while the page stayed open. A root
+  `Clock` (`core/time/clock.ts`) ticks every 30 seconds and catches up when a hidden tab is
+  shown again. `shared/` may not use app services (§14), so the containers inject the clock
+  and pass `now` down; it is a required input all the way, so a frozen time cannot come
+  back unnoticed.
 
 **Interaction**
 

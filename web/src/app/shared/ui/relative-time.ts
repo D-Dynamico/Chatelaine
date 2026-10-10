@@ -21,7 +21,12 @@ export function describeSince(at: Date, now: Date): string {
   return RELATIVE.format(Math.round(seconds / size), name);
 }
 
-/** A relative time, with the exact time on hover and in the `datetime` attribute (§20). */
+/**
+ * A relative time, with the exact time on hover and in the `datetime` attribute (§20).
+ * `now` is required, and comes from the container's `Clock` (§40): it used to default to
+ * the moment the component was created, so "just now" stayed "just now" for as long as
+ * the page was open.
+ */
 @Component({
   selector: 'app-relative-time',
   imports: [DatePipe],
@@ -31,8 +36,8 @@ export function describeSince(at: Date, now: Date): string {
 export class RelativeTime {
   /** An ISO 8601 timestamp. */
   readonly at = input.required<string>();
-  /** The reference point; tests pass a fixed one. */
-  readonly now = input<Date>(new Date());
+  /** The reference point: the app's clock, or a fixed time in tests. */
+  readonly now = input.required<Date>();
 
   protected readonly text = computed(() => describeSince(new Date(this.at()), this.now()));
 }

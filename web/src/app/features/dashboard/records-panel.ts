@@ -18,6 +18,7 @@ import {
   STATUS_LABELS,
 } from '../../core/models/service-request';
 import { injectUrlQuery } from '../../core/routing/url-query';
+import { Clock } from '../../core/time/clock';
 import { dataOf, failureOf, isRefreshing } from '../../shared/load-state/load-state';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
@@ -69,6 +70,7 @@ const options = <V extends string>(values: readonly V[], labels: Readonly<Record
 export class RecordsPanel {
   private readonly data = inject(DashboardDataService);
   protected readonly isAdmin = inject(SessionStore).isAdmin;
+  protected readonly now = inject(Clock).now;
   protected readonly query = injectUrlQuery(RECORDS_QUERY, 'page');
   protected readonly search = new FormControl(this.query.values().q ?? '', { nonNullable: true });
 

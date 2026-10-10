@@ -18,6 +18,7 @@ import {
   type UserView,
 } from '../../core/models/user';
 import { injectUrlQuery } from '../../core/routing/url-query';
+import { Clock } from '../../core/time/clock';
 import { dataOf, failureOf, isRefreshing } from '../../shared/load-state/load-state';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ErrorState } from '../../shared/ui/error-state';
@@ -75,6 +76,7 @@ export class UsersPage {
   private readonly admin = inject(AdminUsersService);
   private readonly actions = inject(UserActions);
   private readonly session = inject(SessionStore);
+  protected readonly now = inject(Clock).now;
   protected readonly currentUserId = computed(() => this.session.user()?.userId ?? '');
   protected readonly query = injectUrlQuery(USERS_QUERY, 'page');
   protected readonly search = new FormControl(this.query.values().q ?? '', { nonNullable: true });

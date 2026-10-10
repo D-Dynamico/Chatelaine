@@ -43,7 +43,7 @@
     <th mat-header-cell *matHeaderCellDef mat-sort-header="lastLoginAt">Last sign-in</th>
     <td mat-cell data-label="Last sign-in" *matCellDef="let user">
       @if (user.lastLoginAt; as at) {
-        <app-relative-time [at]="at" />
+        <app-relative-time [at]="at" [now]="now()" />
       } @else {
         <span class="secondary">Never</span>
       }

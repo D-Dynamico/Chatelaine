@@ -72,6 +72,8 @@ export class RecordsTable {
   readonly page = input.required<RecordsPage>();
   readonly isAdmin = input.required<boolean>();
   readonly sort = input.required<TableSort>();
+  /** The current time, from the container's clock, for relative times. */
+  readonly now = input.required<Date>();
   readonly sortChange = output<TableSort | null>();
   readonly pageChange = output<number>();
 

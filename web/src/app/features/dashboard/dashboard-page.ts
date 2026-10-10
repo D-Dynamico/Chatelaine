@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { injectUrlQuery } from '../../core/routing/url-query';
+import { Clock } from '../../core/time/clock';
 import { DashboardDataService } from './dashboard-data.service';
 import { ProfilePanel } from './profile-panel';
 import { RecordsPanel } from './records-panel';
@@ -17,7 +18,7 @@ import { type SummaryFilter, SummaryPanel } from './summary-panel';
   imports: [ProfilePanel, RecordsPanel, SummaryPanel],
   template: `
     <h1 class="visually-hidden">Dashboard</h1>
-    <app-profile-panel [state]="profile()" (retry)="data.retryProfile()" />
+    <app-profile-panel [state]="profile()" [now]="now()" (retry)="data.retryProfile()" />
     <app-summary-panel
       [state]="summary()"
       [activeStatus]="recordsQuery.values().status"
@@ -42,6 +43,7 @@ export class DashboardPage {
   protected readonly data = inject(DashboardDataService);
   protected readonly profile = this.data.profile;
   protected readonly summary = this.data.summary;
+  protected readonly now = inject(Clock).now;
   protected readonly recordsQuery = injectUrlQuery(RECORDS_QUERY, 'page');
 
   protected filterRecords(filter: SummaryFilter): void {

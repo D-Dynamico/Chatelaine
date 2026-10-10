@@ -1,6 +1,7 @@
 import { type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { type RecordSummary } from '../../core/models/service-request';
+import { type UserView } from '../../core/models/user';
 import { type LoadState } from '../../shared/load-state/load-state';
 import { MEERA, RIYA } from '../../testing/fixtures';
 import { ACCESS_SENTENCES, ProfilePanel } from './profile-panel';
@@ -11,14 +12,21 @@ const failure = { status: 503, code: 'SIMULATED_FAILURE', message: 'Simulated fa
 function render<T extends { retry: { subscribe: (fn: () => void) => unknown } }, D>(
   type: Type<T>,
   state: LoadState<D>,
+  inputs: Readonly<Record<string, unknown>> = {},
 ) {
   const fixture = TestBed.createComponent(type);
   fixture.componentRef.setInput('state', state);
+  Object.entries(inputs).forEach(([name, value]) => {
+    fixture.componentRef.setInput(name, value);
+  });
   fixture.detectChanges();
   const retry = vi.fn();
   fixture.componentInstance.retry.subscribe(retry);
   return { host: fixture.nativeElement as HTMLElement, retry };
 }
+
+const renderProfile = (state: LoadState<UserView>) =>
+  render(ProfilePanel, state, { now: new Date() });
 
 const summary = (overrides: Partial<RecordSummary> = {}): RecordSummary => ({
   scope: 'OWN',
@@ -31,14 +39,14 @@ const summary = (overrides: Partial<RecordSummary> = {}): RecordSummary => ({
 
 describe('ProfilePanel (the access card)', () => {
   it('shows a skeleton and is busy while loading', () => {
-    const { host } = render(ProfilePanel, { status: 'loading' });
+    const { host } = renderProfile({ status: 'loading' });
 
     expect(host.getAttribute('aria-busy')).toBe('true');
     expect(host.querySelectorAll('app-skeleton').length).toBeGreaterThan(0);
   });
 
   it('tells a General User what they can and cannot see', () => {
-    const { host } = render(ProfilePanel, { status: 'loaded', data: RIYA, isRefreshing: false });
+    const { host } = renderProfile({ status: 'loaded', data: RIYA, isRefreshing: false });
 
     expect(host.getAttribute('aria-busy')).toBe('false');
     expect(host.textContent).toContain('Riya Sharma');
@@ -48,7 +56,7 @@ describe('ProfilePanel (the access card)', () => {
   });
 
   it('tells an Admin they see everything, under a brass edge', () => {
-    const { host } = render(ProfilePanel, { status: 'loaded', data: MEERA, isRefreshing: false });
+    const { host } = renderProfile({ status: 'loaded', data: MEERA, isRefreshing: false });
 
     expect(host.textContent).toContain(ACCESS_SENTENCES.ADMIN);
     expect(host.classList).toContain('admin');
@@ -56,7 +64,7 @@ describe('ProfilePanel (the access card)', () => {
 
   it('shows the sign-in before this one, never the one that is happening now', () => {
     const user = { ...RIYA, lastLoginAt: '2026-10-08T08:00:00.000Z' };
-    const { host } = render(ProfilePanel, { status: 'loaded', data: user, isRefreshing: false });
+    const { host } = renderProfile({ status: 'loaded', data: user, isRefreshing: false });
 
     expect(host.textContent).toContain('Last signed in');
     expect(host.querySelector('time')?.getAttribute('datetime')).toBe(RIYA.previousLoginAt);
@@ -64,7 +72,7 @@ describe('ProfilePanel (the access card)', () => {
 
   it('says "First sign-in" for a user with no earlier sign-in', () => {
     const user = { ...RIYA, previousLoginAt: null };
-    const { host } = render(ProfilePanel, { status: 'loaded', data: user, isRefreshing: false });
+    const { host } = renderProfile({ status: 'loaded', data: user, isRefreshing: false });
 
     expect(host.textContent).toContain('First sign-in');
     expect(host.textContent).not.toContain('Last signed in');
@@ -72,7 +80,7 @@ describe('ProfilePanel (the access card)', () => {
   });
 
   it('says it could not load the profile, and retries', () => {
-    const { host, retry } = render(ProfilePanel, { status: 'error', error: failure });
+    const { host, retry } = renderProfile({ status: 'error', error: failure });
 
     expect(host.textContent).toContain("Couldn't load your profile.");
     host.querySelector('button')?.click();

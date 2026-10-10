@@ -25,6 +25,7 @@ function render(isAdmin: boolean, items: readonly AdminRecordItem[] = [ITEM]) {
   fixture.componentRef.setInput('page', page);
   fixture.componentRef.setInput('isAdmin', isAdmin);
   fixture.componentRef.setInput('sort', sort);
+  fixture.componentRef.setInput('now', new Date());
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
   const headers = () =>

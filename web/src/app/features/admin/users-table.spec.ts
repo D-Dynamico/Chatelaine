@@ -20,6 +20,7 @@ async function render(currentUserId = MEERA.userId, sort = DEFAULT_SORT) {
   fixture.componentRef.setInput('page', PAGE);
   fixture.componentRef.setInput('sort', sort);
   fixture.componentRef.setInput('currentUserId', currentUserId);
+  fixture.componentRef.setInput('now', new Date());
   await fixture.whenStable();
   const host = fixture.nativeElement as HTMLElement;
   const rowOf = (name: string): HTMLElement => {

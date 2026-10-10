@@ -9,7 +9,7 @@
       <li>{{ me.department }}</li>
       <li>
         @if (me.previousLoginAt; as previous) {
-          Last signed in <app-relative-time [at]="previous" />
+          Last signed in <app-relative-time [at]="previous" [now]="now()" />
         } @else {
           First sign-in
         }

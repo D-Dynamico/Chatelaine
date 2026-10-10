@@ -37,6 +37,20 @@ answers something seen there.
    "Sign in" after a pick. Checked at 1440px in both themes and at 502px (Chrome's narrowest
    window): no horizontal scroll.
 
+6. **"Last signed in" was stale** (asked after the first five). DJK asked to fix or remove
+   it. The value was right: it is the sign-in before this one, by design (D36), and "just
+   now" would tell the user nothing. What was wrong is that it never moved: `RelativeTime`
+   defaulted `now` to `new Date()` once, so every relative time in the app (access card,
+   records "Updated", users "Last sign-in") froze while the page stayed open. **Fixed, not
+   removed.** A root `Clock` ticks every 30 s and on `visibilitychange`. My first version
+   had `RelativeTime` inject it; lint refused it (`shared/` cannot import `core/`, §14),
+   and the rule was right, so the containers (dashboard page, records panel, users page)
+   inject the clock and pass `now` through the three presentational components. `now` is
+   now a required input, which meant the three presentational specs needed `now` in their
+   setup; no assertion changed. Verified in the browser: all three render through the
+   clock. Mutation checks, both killed: a clock without its interval, and one that ignores
+   the tab being shown.
+
 ## Surprises
 
 - **"Open5".** Angular drops whitespace between elements, so the new stat button's text,
@@ -49,6 +63,9 @@ answers something seen there.
 - **A mutation check that proved nothing.** Deleting the focus call in `fillFrom` made the
   build fail (unused member), so the "red" run was a compile error, not the test. Re-run
   with the call replaced by a no-op: the new test failed on `document.activeElement`.
+- **A test that hung, again.** The first clock test awaited `whenStable()` under fake
+  timers and timed out, the trap fixed in `720c2d9` just before this session. It renders
+  with `detectChanges()` instead.
 - **A browser click that missed.** A ref-based click after scrolling hit nothing, which
   first looked like the summary filter not working. A script click proved the wiring.
 

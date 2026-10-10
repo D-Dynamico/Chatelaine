@@ -29,6 +29,8 @@ export const ACCESS_SENTENCES = {
 })
 export class ProfilePanel {
   readonly state = input.required<LoadState<UserView>>();
+  /** The current time, from the container's clock, for relative times. */
+  readonly now = input.required<Date>();
   readonly retry = output();
 
   protected readonly user = computed(() => dataOf(this.state()));

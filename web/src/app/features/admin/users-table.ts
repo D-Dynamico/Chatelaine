@@ -53,6 +53,8 @@ export class UsersTable {
   readonly sort = input.required<UserTableSort>();
   /** The signed-in admin, whose own row is protected. */
   readonly currentUserId = input.required<string>();
+  /** The current time, from the container's clock, for relative times. */
+  readonly now = input.required<Date>();
   readonly sortChange = output<UserTableSort | null>();
   readonly pageChange = output<number>();
   readonly edit = output<UserView>();
