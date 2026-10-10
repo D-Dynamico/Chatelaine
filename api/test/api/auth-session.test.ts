@@ -38,6 +38,7 @@ describe('GET /api/me and session checks', () => {
       createdAt: T0,
       updatedAt: T0,
       lastLoginAt: T1,
+      previousLoginAt: null,
     });
   });
 

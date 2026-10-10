@@ -8,8 +8,8 @@
       <li class="tabular">{{ me.userId }}</li>
       <li>{{ me.department }}</li>
       <li>
-        @if (me.lastLoginAt; as lastLogin) {
-          Last signed in <app-relative-time [at]="lastLogin" />
+        @if (me.previousLoginAt; as previous) {
+          Last signed in <app-relative-time [at]="previous" />
         } @else {
           First sign-in
         }

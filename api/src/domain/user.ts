@@ -41,6 +41,12 @@ export interface User {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lastLoginAt: string | null;
+  /**
+   * The sign-in before `lastLoginAt`: what a user means by "the last time I was here". The
+   * current sign-in overwrites `lastLoginAt` at the moment it returns the user, so on its own
+   * that field could only ever say "just now".
+   */
+  readonly previousLoginAt: string | null;
 }
 
 /** The user as the API returns it (docs/API.md §10). Same fields as User, by design. */
@@ -62,6 +68,8 @@ export function toUser(source: User): User {
     createdAt: source.createdAt,
     updatedAt: source.updatedAt,
     lastLoginAt: source.lastLoginAt,
+    // A user stored before this field existed has none: coalesced so the key is never omitted.
+    previousLoginAt: source.previousLoginAt ?? null,
   };
 }
 

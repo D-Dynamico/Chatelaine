@@ -89,7 +89,9 @@ export class MongoUserRepository implements UserRepository {
   async touchLastLogin(userId: string, at: string): Promise<void> {
     const { matchedCount } = await this.collection.updateOne(
       { userId },
-      { $set: { lastLoginAt: at } },
+      // An aggregation-pipeline update, so the old value is read and moved in the same atomic
+      // write; two separate $set operators cannot refer to each other's fields.
+      [{ $set: { previousLoginAt: '$lastLoginAt', lastLoginAt: { $literal: at } } }],
     );
     if (matchedCount === 0) throw userNotFound(userId);
   }

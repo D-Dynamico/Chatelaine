@@ -70,7 +70,7 @@ export class FileUserRepository implements UserRepository {
   async touchLastLogin(userId: string, at: string): Promise<void> {
     await this.store.mutate((draft) => {
       const { index, stored } = locate(draft, userId);
-      draft.users[index] = { ...stored, lastLoginAt: at };
+      draft.users[index] = { ...stored, previousLoginAt: stored.lastLoginAt, lastLoginAt: at };
     });
   }
 

@@ -49,7 +49,11 @@ export class AuthService {
     const signedInAt = this.clock.now().toISOString();
     await this.users.touchLastLogin(user.userId, signedInAt);
     const { token, expiresAt } = this.tokens.issue({ sub: user.userId, role: user.role });
-    return { token, expiresAt, user: toUserView({ ...user, lastLoginAt: signedInAt }) };
+    return {
+      token,
+      expiresAt,
+      user: toUserView({ ...user, previousLoginAt: user.lastLoginAt, lastLoginAt: signedInAt }),
+    };
   }
 
   /**

@@ -36,7 +36,8 @@ Sections §33 to §38.
   and includes a token that `GET /me` accepts.
 - Wrong password, wrong role, unknown user, disabled user: all 401 `INVALID_CREDENTIALS`,
   and the four response bodies are deep-equal.
-- `lastLoginAt` changes after a successful login.
+- `lastLoginAt` changes after a successful login, and the value it replaced becomes
+  `previousLoginAt`, in the login response and in `/me` (null on a first sign-in).
 - 11th attempt in the window returns 429 with `Retry-After`.
 - Missing token, malformed token, bad signature, expired token: 401 `UNAUTHENTICATED`.
 - Token for a user who was then disabled, deleted or re-roled: 401 `SESSION_INVALID`.

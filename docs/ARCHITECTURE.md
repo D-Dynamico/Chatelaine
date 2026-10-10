@@ -159,6 +159,7 @@ Rules that follow from the table:
 | `passwordHash` | string | bcrypt, cost 10. Exists only inside the repository layer |
 | `createdAt`, `updatedAt` | ISO 8601 string | |
 | `lastLoginAt` | ISO 8601 string \| null | Set on successful login |
+| `previousLoginAt` | ISO 8601 string \| null | The `lastLoginAt` it replaced, moved in the same write (D36) |
 
 The repository returns `User` without the hash. Login uses a separate
 `findCredentials(userId)` that returns `{ user, passwordHash }`, so the hash cannot leak

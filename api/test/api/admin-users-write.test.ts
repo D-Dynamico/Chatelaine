@@ -74,6 +74,7 @@ describe('POST, PATCH and DELETE /api/admin/users', () => {
         createdAt: TEST_NOW,
         updatedAt: TEST_NOW,
         lastLoginAt: null,
+        previousLoginAt: null,
       });
       await request(context().app)
         .get('/api/admin/users/neha')

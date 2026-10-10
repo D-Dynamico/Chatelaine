@@ -74,6 +74,7 @@ export class UserService {
       createdAt: now,
       updatedAt: now,
       lastLoginAt: null,
+      previousLoginAt: null,
     });
     return toUserView(created);
   }

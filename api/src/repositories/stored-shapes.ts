@@ -30,6 +30,7 @@ export const storedUser = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   lastLoginAt: nullableText,
+  previousLoginAt: nullableText,
 });
 
 export const storedRequest = z.object({

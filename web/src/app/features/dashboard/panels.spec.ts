@@ -54,6 +54,23 @@ describe('ProfilePanel (the access card)', () => {
     expect(host.classList).toContain('admin');
   });
 
+  it('shows the sign-in before this one, never the one that is happening now', () => {
+    const user = { ...RIYA, lastLoginAt: '2026-10-08T08:00:00.000Z' };
+    const { host } = render(ProfilePanel, { status: 'loaded', data: user, isRefreshing: false });
+
+    expect(host.textContent).toContain('Last signed in');
+    expect(host.querySelector('time')?.getAttribute('datetime')).toBe(RIYA.previousLoginAt);
+  });
+
+  it('says "First sign-in" for a user with no earlier sign-in', () => {
+    const user = { ...RIYA, previousLoginAt: null };
+    const { host } = render(ProfilePanel, { status: 'loaded', data: user, isRefreshing: false });
+
+    expect(host.textContent).toContain('First sign-in');
+    expect(host.textContent).not.toContain('Last signed in');
+    expect(host.querySelector('time')).toBeNull();
+  });
+
   it('says it could not load the profile, and retries', () => {
     const { host, retry } = render(ProfilePanel, { status: 'error', error: failure });
 

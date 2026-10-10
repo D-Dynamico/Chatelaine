@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ConflictError, NotFoundError } from '../../src/domain/errors.js';
 import type { UserListQuery } from '../../src/domain/user.js';
 import type { Store } from '../../src/repositories/contracts.js';
-import { aUser, T0, T1, userSet } from '../helpers/fixtures.js';
+import { aUser, T0, T1, T2, userSet } from '../helpers/fixtures.js';
 
 export interface StoreHandle {
   readonly store: Store;
@@ -32,7 +32,12 @@ export function describeUserRepositoryContract(
     it('creates a user and returns it without the password hash', async () => {
       const created = await users().create(aUser());
       expect(created).not.toHaveProperty('passwordHash');
-      expect(created).toMatchObject({ userId: 'riya', role: 'GENERAL', lastLoginAt: null });
+      expect(created).toMatchObject({
+        userId: 'riya',
+        role: 'GENERAL',
+        lastLoginAt: null,
+        previousLoginAt: null,
+      });
       expect(await users().findById('riya')).toEqual(created);
     });
 
@@ -92,6 +97,22 @@ export function describeUserRepositoryContract(
       await users().create(aUser());
       await users().touchLastLogin('riya', T1);
       expect(await users().findById('riya')).toMatchObject({ lastLoginAt: T1, updatedAt: T0 });
+    });
+
+    it('keeps the sign-in before this one, so a user can see when they were last here', async () => {
+      await users().create(aUser());
+
+      await users().touchLastLogin('riya', T1);
+      expect(await users().findById('riya')).toMatchObject({
+        lastLoginAt: T1,
+        previousLoginAt: null,
+      });
+
+      await users().touchLastLogin('riya', T2);
+      expect(await users().findById('riya')).toMatchObject({
+        lastLoginAt: T2,
+        previousLoginAt: T1,
+      });
     });
 
     it('hands out copies, so changing a result cannot change the store', async () => {

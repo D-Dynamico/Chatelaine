@@ -33,7 +33,7 @@ D-entries inside §27.
 | §24 | Components and states | [UI.md](UI.md) |
 | §25 | Copy | [UI.md](UI.md) |
 | §26 | Accessibility and motion | [UI.md](UI.md) |
-| §27 | Decision log (D1 to D35) | [DECISIONS.md](DECISIONS.md) |
+| §27 | Decision log (D1 to D36) | [DECISIONS.md](DECISIONS.md) |
 | §28 | Local setup | [WORKFLOWS.md](WORKFLOWS.md) |
 | §29 | Accounts and deploy | [WORKFLOWS.md](WORKFLOWS.md) |
 | §30 | Continuous integration | [WORKFLOWS.md](WORKFLOWS.md) |

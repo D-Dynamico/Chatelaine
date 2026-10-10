@@ -27,6 +27,7 @@ export async function seedDemoData(store: Store, passwords: PasswordService): Pr
       createdAt: demo.createdAt,
       updatedAt: demo.createdAt,
       lastLoginAt: null,
+      previousLoginAt: null,
     });
   }
   const requests = generateDemoRequests();

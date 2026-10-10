@@ -4,6 +4,7 @@ import type { NewUser } from '../../src/domain/user.js';
 
 export const T0 = '2026-09-01T09:00:00.000Z';
 export const T1 = '2026-10-07T12:00:00.000Z';
+export const T2 = '2026-10-08T08:30:00.000Z';
 
 export const DEMO_PASSWORD = 'Chatelaine@2026';
 /** Cost 4 keeps tests fast; bcrypt reads the cost from the hash, so login runs as usual. */
@@ -45,6 +46,7 @@ export function aUser(overrides: Partial<NewUser> = {}): NewUser {
     createdAt: T0,
     updatedAt: T0,
     lastLoginAt: null,
+    previousLoginAt: null,
     ...overrides,
   };
 }

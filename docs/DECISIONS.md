@@ -238,3 +238,14 @@ three panels are one unit and "Try again" reloads all three. Considered: `MatSid
 (modal, or pushing the content) and `MatBottomSheet` (always modal), both of which hide
 or block the thing being demonstrated; applying a strategy change immediately (a surprise
 reload mid-demo).
+
+**D36. A user's previous sign-in is stored, so "Last signed in" is true.**
+Sign-in overwrites `lastLoginAt` at the moment it returns the user, so `/me` could only say
+"just now", and the access card read as a bug. Each adapter now moves the old value into
+`previousLoginAt` in the same atomic write that sets the new one (the file adapter in its
+mutation, Mongo with an aggregation-pipeline update, DynamoDB with an update expression whose
+right-hand side reads the item as it was), and the shared contract suite covers it on all
+three. A first sign-in shows "First sign-in". The admin table's "Last sign-in" column keeps
+`lastLoginAt`, which is the right thing for an admin to see about someone else. Considered:
+relabelling the card "Signed in just now" (true, tells the user nothing), and a separate
+sign-in history collection (more than one timestamp's worth of machinery).

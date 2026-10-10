@@ -112,11 +112,17 @@ profile panel.
   "status": "ACTIVE",
   "createdAt": "2026-09-01T09:00:00.000Z",
   "updatedAt": "2026-09-01T09:00:00.000Z",
-  "lastLoginAt": "2026-10-07T13:02:11.000Z"
+  "lastLoginAt": "2026-10-07T13:02:11.000Z",
+  "previousLoginAt": "2026-10-06T09:30:00.000Z"
 }
 ```
 
 This shape is `UserView`. It never contains `passwordHash` or `password`.
+
+`lastLoginAt` is the sign-in that created the current session, so for the signed-in user it
+can only ever mean "just now". `previousLoginAt` is the one before it, or `null` for a
+first sign-in, and is what the access card shows as "Last signed in" (D36). Both are
+`null` for a user who has never signed in.
 
 There is no logout endpoint. Tokens are stateless; logging out clears the token in the
 browser. Token revocation is listed as future scope.

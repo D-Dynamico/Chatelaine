@@ -28,7 +28,10 @@ export interface UserRepository {
   update(userId: string, patch: UserPatch): Promise<User>;
   /** Throws NotFoundError(USER_NOT_FOUND) if the user does not exist. */
   delete(userId: string): Promise<void>;
-  /** Sets lastLoginAt only; updatedAt is about profile changes, not sign-ins. */
+  /**
+   * Records a sign-in: the old lastLoginAt becomes previousLoginAt and `at` becomes
+   * lastLoginAt, in one atomic write. updatedAt is about profile changes, not sign-ins.
+   */
   touchLastLogin(userId: string, at: string): Promise<void>;
   /** Filters, sorts and pages; ties break on userId. Never returns hashes. */
   list(query: UserListQuery): Promise<Page<User>>;

@@ -92,7 +92,12 @@ export class DynamoUserRepository implements UserRepository {
       TableName: this.table.name,
       Key: userKey(userId),
       ConditionExpression: EXISTS,
-      ...setExpression({ lastLoginAt: at }),
+      // The right-hand side reads the item as it was before this update, so the old value
+      // moves across in the same atomic write. if_not_exists covers an item stored before
+      // the attribute existed.
+      UpdateExpression: 'SET #previous = if_not_exists(#last, :none), #last = :at',
+      ExpressionAttributeNames: { '#previous': 'previousLoginAt', '#last': 'lastLoginAt' },
+      ExpressionAttributeValues: { ':at': at, ':none': null },
     });
     await this.conditional(
       () => this.table.documents.send(update),

@@ -2,7 +2,9 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { expectErrorShape } from '../helpers/error-shape.js';
 import { DEMO_PASSWORD, signInUsers } from '../helpers/fixtures.js';
+import type { Clock } from '../../src/lib/clock.js';
 import { createTestContext, TEST_NOW, useTestContext } from '../helpers/test-app.js';
+import { T2 } from '../helpers/fixtures.js';
 
 const LOGIN = '/api/auth/login';
 const USER_VIEW_KEYS = [
@@ -11,6 +13,7 @@ const USER_VIEW_KEYS = [
   'displayName',
   'email',
   'lastLoginAt',
+  'previousLoginAt',
   'role',
   'status',
   'updatedAt',
@@ -29,7 +32,12 @@ describe('POST /api/auth/login', () => {
     const body = res.body as { token: string; expiresAt: string; user: Record<string, unknown> };
     expect(Object.keys(body).sort()).toEqual(['expiresAt', 'token', 'user']);
     expect(Object.keys(body.user).sort()).toEqual(USER_VIEW_KEYS);
-    expect(body.user).toMatchObject({ userId, role, lastLoginAt: TEST_NOW });
+    expect(body.user).toMatchObject({
+      userId,
+      role,
+      lastLoginAt: TEST_NOW,
+      previousLoginAt: null,
+    });
     expect(body.token.split('.')).toHaveLength(3);
     expect(body.expiresAt).toBe('2026-10-07T14:00:00.000Z'); // TEST_NOW plus the 2h default
   });
@@ -104,5 +112,37 @@ describe('login rate limit', () => {
       .send({ userId: 'riya', password: DEMO_PASSWORD, role: 'GENERAL' })
       .expect(200);
     await context.cleanup();
+  });
+});
+
+describe('POST /api/auth/login, signing in again', () => {
+  let now = new Date(TEST_NOW);
+  const clock: Clock = { now: () => now };
+  const context = useTestContext({ users: signInUsers(), clock });
+  const login = () =>
+    request(context().app)
+      .post(LOGIN)
+      .send({ userId: 'riya', password: DEMO_PASSWORD, role: 'GENERAL' })
+      .expect(200);
+
+  it('returns the sign-in before this one as previousLoginAt, and stores it', async () => {
+    now = new Date(TEST_NOW);
+    const first = await login();
+    expect((first.body as { user: object }).user).toMatchObject({
+      lastLoginAt: TEST_NOW,
+      previousLoginAt: null,
+    });
+
+    now = new Date(T2);
+    const second = await login();
+
+    expect((second.body as { user: object }).user).toMatchObject({
+      lastLoginAt: T2,
+      previousLoginAt: TEST_NOW,
+    });
+    expect(await context().store.users.findById('riya')).toMatchObject({
+      lastLoginAt: T2,
+      previousLoginAt: TEST_NOW,
+    });
   });
 });

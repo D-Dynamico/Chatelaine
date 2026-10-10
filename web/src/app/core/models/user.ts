@@ -49,6 +49,8 @@ export interface UserView {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lastLoginAt: string | null;
+  /** The sign-in before `lastLoginAt`: what "last signed in" means to the user (§10). */
+  readonly previousLoginAt: string | null;
 }
 
 /** `GET /admin/users/:userId`: the user plus how many service requests they own. */

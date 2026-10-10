@@ -70,6 +70,7 @@ function userFields(user: NewUser): XmlField[] {
     ['createdAt', user.createdAt],
     ['updatedAt', user.updatedAt],
     ['lastLoginAt', user.lastLoginAt],
+    ['previousLoginAt', user.previousLoginAt],
   ];
 }
 

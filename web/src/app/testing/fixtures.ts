@@ -14,6 +14,7 @@ export const RIYA: UserView = {
   createdAt: '2026-09-01T09:00:00.000Z',
   updatedAt: '2026-09-01T09:00:00.000Z',
   lastLoginAt: '2026-10-07T13:02:11.000Z',
+  previousLoginAt: '2026-10-06T09:30:00.000Z',
 };
 
 export const MEERA: UserView = {
