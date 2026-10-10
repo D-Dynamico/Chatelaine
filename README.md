@@ -15,8 +15,8 @@ with the wrong token.
 
 ## Live demo
 
-- App: `<vercel url>`
-- API health: `<render url>/api/health`
+- App: <https://chatelaine-wine.vercel.app>
+- API health: <https://chatelaine-api.onrender.com/api/health>
 
 The API runs on a free instance that sleeps after 15 idle minutes. The first visit can take
 about a minute; the app shows the server waking up rather than a blank page.
